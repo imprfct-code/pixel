@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
-import type { Entry, UserSummary } from "../../shared/pixel";
+import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
 import { ArtworkImage } from "./ArtworkImage";
 
 export type ArtworkGridItem = {
@@ -97,19 +97,23 @@ export function ArtworkGrid({
   works,
   onOpen,
   controls = true,
+  visibilityControls = false,
   layout = "grid",
 }: {
   works: ArtworkGridItem[];
   onOpen: (entry: Entry) => void;
   controls?: boolean;
+  visibilityControls?: boolean;
   layout?: "grid" | "masonry";
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
+  const [visibility, setVisibility] = useState<Visibility | "all">("all");
   const visibleWorks = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     return works
       .filter(({ entry, author }) => {
+        if (visibility !== "all" && entry.visibility !== visibility) return false;
         if (!normalizedQuery) return true;
         return [
           entry.title,
@@ -126,7 +130,7 @@ export function ArtworkGrid({
           new Date(right.entry.createdAt).getTime() - new Date(left.entry.createdAt).getTime();
         return sort === "newest" ? difference : -difference;
       });
-  }, [query, sort, works]);
+  }, [query, sort, visibility, works]);
 
   return (
     <>
@@ -142,6 +146,20 @@ export function ArtworkGrid({
               aria-label="Search works"
             />
           </label>
+          {visibilityControls && (
+            <div className="work-filter" aria-label="Filter by visibility">
+              {(["all", "public", "private", "unlisted"] as const).map((value) => (
+                <button
+                  type="button"
+                  aria-pressed={visibility === value}
+                  onClick={() => setVisibility(value)}
+                  key={value}
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="work-sort" aria-label="Sort works">
             <button
               type="button"

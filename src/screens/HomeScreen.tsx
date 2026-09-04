@@ -173,6 +173,7 @@ export function HomeScreen({
           <ArtworkGrid
             works={entries.map((entry) => ({ entry, author: user }))}
             layout="masonry"
+            visibilityControls={editable}
             onOpen={(entry) =>
               void navigate(`/entries/${entry.id}`, {
                 state: { returnTo: editable ? "/profile" : `/${user.username}` },

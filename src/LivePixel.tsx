@@ -1,6 +1,6 @@
 import { useUser, UserButton } from "@clerk/react";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { api } from "../convex/_generated/api";
 import type { Entry, ProfileInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
@@ -11,8 +11,6 @@ export function LivePixel() {
   const currentUser = useQuery(api.users.current);
   const ensureUser = useMutation(api.users.getOrCreate);
   const saveProfile = useMutation(api.users.updateProfile);
-  const saveAvatar = useMutation(api.users.updateAvatar);
-  const syncingAvatar = useRef<string>(undefined);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const upload = usePixelUpload();
 
@@ -26,19 +24,6 @@ export function LivePixel() {
     });
   }, [clerkUser, currentUser, ensureUser]);
 
-  const clerkAvatarUrl = clerkUser?.imageUrl;
-  const savedAvatarUrl = currentUser?.avatarUrl;
-
-  useEffect(() => {
-    if (!clerkAvatarUrl || !currentUser || savedAvatarUrl === clerkAvatarUrl) return;
-    if (syncingAvatar.current === clerkAvatarUrl) return;
-
-    syncingAvatar.current = clerkAvatarUrl;
-    void saveAvatar({ avatarUrl: clerkAvatarUrl }).finally(() => {
-      if (syncingAvatar.current === clerkAvatarUrl) syncingAvatar.current = undefined;
-    });
-  }, [clerkAvatarUrl, currentUser, saveAvatar, savedAvatarUrl]);
-
   if (!currentUser) return <p className="status-message full-page">loading</p>;
 
   const user: UserSummary = {
@@ -48,7 +33,7 @@ export function LivePixel() {
     bio: currentUser.bio ?? null,
     website: currentUser.website ?? null,
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
-    avatarUrl: clerkAvatarUrl ?? currentUser.avatarUrl ?? "/avatar.png",
+    avatarUrl: currentUser.avatarUrl ?? "/avatar.png",
   };
 
   async function updateProfile(input: ProfileInput) {

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_PATTERN = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
 const originalEmails = new WeakMap<HTMLElement, string>();
 const revealedEmails = new WeakSet<HTMLElement>();
 
@@ -25,30 +25,44 @@ function revealEmail(element: HTMLElement) {
 
 function maskEmails(root: ParentNode) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const matches: HTMLElement[] = [];
+  const matches: Text[] = [];
 
   while (walker.nextNode()) {
-    const node = walker.currentNode;
-    const email = node.textContent?.trim() ?? "";
+    const node = walker.currentNode as Text;
     const element = node.parentElement;
 
-    if (!element || !EMAIL_PATTERN.test(email)) continue;
+    if (!element) continue;
     if (!element.closest('[class*="cl-"]')) continue;
-    if (element.textContent?.trim() !== email) continue;
-    if (originalEmails.has(element) || revealedEmails.has(element)) continue;
+    if (element.closest(".clerk-email-private, .clerk-email-revealed")) continue;
 
-    originalEmails.set(element, email);
-    matches.push(element);
+    EMAIL_PATTERN.lastIndex = 0;
+    if (EMAIL_PATTERN.test(node.data)) matches.push(node);
   }
 
-  for (const element of matches) {
-    const email = originalEmails.get(element);
-    if (!email) continue;
-    element.textContent = privateEmail(email);
-    element.classList.add("clerk-email-private");
-    element.tabIndex = 0;
-    element.setAttribute("role", "button");
-    element.setAttribute("aria-label", "Reveal email address");
+  for (const node of matches) {
+    if (!node.isConnected) continue;
+    const fragment = document.createDocumentFragment();
+    let offset = 0;
+    EMAIL_PATTERN.lastIndex = 0;
+
+    for (const match of node.data.matchAll(EMAIL_PATTERN)) {
+      const email = match[0];
+      const index = match.index;
+      fragment.append(node.data.slice(offset, index));
+
+      const element = document.createElement("span");
+      element.textContent = privateEmail(email);
+      element.className = "clerk-email-private";
+      element.tabIndex = 0;
+      element.setAttribute("role", "button");
+      element.setAttribute("aria-label", "Reveal email address");
+      originalEmails.set(element, email);
+      fragment.append(element);
+      offset = index + email.length;
+    }
+
+    fragment.append(node.data.slice(offset));
+    node.replaceWith(fragment);
   }
 }
 

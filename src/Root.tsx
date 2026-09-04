@@ -3,6 +3,7 @@ import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
+import { ClerkAvatarSync } from "./components/ClerkAvatarSync";
 import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
 import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
@@ -99,10 +100,12 @@ const CLERK_APPEARANCE = {
       height: "min(620px, calc(100vh - 32px))",
       maxWidth: "860px",
       maxHeight: "620px",
+      boxSizing: "border-box",
+      overflow: "hidden",
       border: "1px solid #343434",
       borderRadius: "0px",
       backgroundColor: "#0d0d0d",
-      boxShadow: "0 32px 120px rgba(0, 0, 0, 0.72)",
+      boxShadow: "inset 0 0 0 1px #343434, 0 32px 120px rgba(0, 0, 0, 0.72)",
     },
     navbar: {
       width: "210px",
@@ -239,6 +242,7 @@ export function Root({ convexUrl, clerkKey }: { convexUrl?: string; clerkKey?: s
       appearance={CLERK_APPEARANCE}
     >
       <ConvexProviderWithClerk client={new ConvexReactClient(convexUrl)} useAuth={useAuth}>
+        <ClerkAvatarSync />
         <ClerkEmailPrivacy />
         <ConfiguredPixel />
       </ConvexProviderWithClerk>

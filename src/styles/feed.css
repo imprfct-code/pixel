@@ -38,12 +38,14 @@
 .work-search input::-webkit-search-cancel-button {
   filter: invert(0.6);
 }
-.work-sort {
+.work-sort,
+.work-filter {
   display: flex;
   flex: none;
   border: 1px solid var(--line);
 }
-.work-sort button {
+.work-sort button,
+.work-filter button {
   display: inline-flex;
   height: 30px;
   align-items: center;
@@ -55,10 +57,12 @@
   font-size: 9px;
   text-transform: uppercase;
 }
-.work-sort button + button {
+.work-sort button + button,
+.work-filter button + button {
   border-left: 1px solid var(--line);
 }
-.work-sort button[aria-pressed="true"] {
+.work-sort button[aria-pressed="true"],
+.work-filter button[aria-pressed="true"] {
   background: #1a1a1a;
   color: #ddd;
 }
@@ -260,8 +264,17 @@
   .work-search {
     width: 100%;
   }
-  .work-sort {
+  .work-sort,
+  .work-filter {
     align-self: flex-end;
+  }
+  .work-filter {
+    width: 100%;
+  }
+  .work-filter button {
+    flex: 1;
+    justify-content: center;
+    padding: 0 5px;
   }
   .feed-board {
     grid-template-columns: repeat(2, minmax(0, 1fr));
