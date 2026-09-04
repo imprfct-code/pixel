@@ -244,7 +244,7 @@
     0 8px,
     8px -8px,
     -8px 0;
-  overscroll-behavior: contain;
+  overscroll-behavior: none;
   touch-action: none;
   user-select: none;
 }
