@@ -1,0 +1,46 @@
+:root {
+  color: #f2f2f2;
+  background: #090909;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+main {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  gap: 1rem;
+  padding: clamp(1.5rem, 6vw, 6rem);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #888;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h1 {
+  max-width: 18ch;
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 5rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.95;
+}
