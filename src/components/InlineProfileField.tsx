@@ -1,3 +1,4 @@
+import { Pencil } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 type ProfileFieldKind = "handle" | "displayName" | "bio" | "website";
@@ -32,7 +33,14 @@ export function InlineProfileField({
     if (!editing) return;
     const field = kind === "bio" ? textareaRef.current : inputRef.current;
     field?.focus();
-    field?.select();
+    if (field instanceof HTMLInputElement) {
+      field.setSelectionRange(field.value.length, field.value.length);
+    } else if (field) {
+      field.selectionStart = field.value.length;
+      field.selectionEnd = field.value.length;
+      field.style.height = "auto";
+      field.style.height = `${field.scrollHeight}px`;
+    }
   }, [editing, kind]);
 
   async function submit(event: FormEvent) {
@@ -49,7 +57,8 @@ export function InlineProfileField({
       await onSave(draft);
       setEditing(false);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not save");
+      const message = caught instanceof Error ? caught.message : "Could not save";
+      setError(/already taken/i.test(message) ? "already taken" : message);
     } finally {
       savingRef.current = false;
       setSaving(false);
@@ -74,6 +83,7 @@ export function InlineProfileField({
       <form
         className="inline-profile-form"
         data-kind={kind}
+        data-error={error || undefined}
         data-saving={saving || undefined}
         onSubmit={submit}
       >
@@ -86,23 +96,29 @@ export function InlineProfileField({
             maxLength={240}
             value={draft}
             onBlur={(event) => event.currentTarget.form?.requestSubmit()}
-            onChange={(event) => setDraft(event.target.value)}
+            onChange={(event) => {
+              setDraft(event.target.value);
+              event.currentTarget.style.height = "auto";
+              event.currentTarget.style.height = `${event.currentTarget.scrollHeight}px`;
+            }}
             onKeyDown={handleKeyDown}
           />
         ) : (
-          <input
-            ref={inputRef}
-            aria-label={`Edit ${fieldLabels[kind]}`}
-            required={kind === "handle"}
-            minLength={kind === "handle" ? 2 : undefined}
-            maxLength={kind === "handle" ? 32 : kind === "displayName" ? 80 : 160}
-            size={Math.max(draft.length, emptyLabel.length, 2)}
-            type={kind === "website" ? "url" : "text"}
-            value={draft}
-            onBlur={(event) => event.currentTarget.form?.requestSubmit()}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+          <span className="inline-profile-input">
+            <span aria-hidden="true">{draft || emptyLabel}</span>
+            <input
+              ref={inputRef}
+              aria-label={`Edit ${fieldLabels[kind]}`}
+              required={kind === "handle"}
+              minLength={kind === "handle" ? 2 : undefined}
+              maxLength={kind === "handle" ? 32 : kind === "displayName" ? 80 : 160}
+              type={kind === "website" ? "url" : "text"}
+              value={draft}
+              onBlur={(event) => event.currentTarget.form?.requestSubmit()}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+          </span>
         )}
         {error && <small>{error}</small>}
       </form>
@@ -126,6 +142,7 @@ export function InlineProfileField({
     >
       {kind === "handle" && "@"}
       {displayValue || emptyLabel}
+      <Pencil className="inline-profile-pencil" size={11} aria-hidden="true" />
     </button>
   );
 }

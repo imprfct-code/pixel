@@ -200,6 +200,7 @@ h2 {
   display: none;
 }
 .inline-profile-field {
+  position: relative;
   display: block;
   width: fit-content;
   max-width: 100%;
@@ -209,10 +210,22 @@ h2 {
   text-align: left;
   transition: color 100ms ease;
 }
-.inline-profile-field:hover,
 .inline-profile-field:focus-visible {
-  color: #aaa;
   outline: 0;
+}
+.inline-profile-pencil {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 7px);
+  color: #aaa;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 100ms ease;
+}
+.inline-profile-field:hover .inline-profile-pencil,
+.inline-profile-field:focus-visible .inline-profile-pencil {
+  opacity: 0.45;
 }
 .inline-profile-field[data-kind="handle"] {
   margin: 0 0 7px;
@@ -244,7 +257,6 @@ h2 {
   max-width: 100%;
   gap: 0;
 }
-.inline-profile-form > input,
 .inline-profile-form > textarea {
   min-width: 0;
   padding: 0;
@@ -252,11 +264,39 @@ h2 {
   outline: 0;
   background: transparent;
 }
+.inline-profile-input {
+  display: inline-grid;
+  min-width: 1ch;
+  max-width: 100%;
+}
+.inline-profile-input > span,
+.inline-profile-input > input {
+  grid-area: 1 / 1;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
+  white-space: pre;
+}
+.inline-profile-input > span {
+  visibility: hidden;
+}
+.inline-profile-input > input {
+  width: 100%;
+}
 .inline-profile-form > small {
   align-self: center;
   margin-left: 8px;
   color: #df8b8e;
   font-size: 9px;
+  line-height: 1;
+  white-space: nowrap;
 }
 .inline-profile-form[data-saving="true"] {
   opacity: 0.6;
@@ -267,10 +307,6 @@ h2 {
   font-weight: 520;
   letter-spacing: -0.07em;
   line-height: 0.98;
-}
-.inline-profile-form[data-kind="handle"] > input {
-  font-size: inherit;
-  letter-spacing: inherit;
 }
 .inline-profile-form[data-kind="displayName"] {
   color: #777;
@@ -286,6 +322,7 @@ h2 {
 }
 .inline-profile-form[data-kind="bio"] > textarea {
   width: 100%;
+  min-height: 1.6em;
   overflow: hidden;
   resize: none;
 }
@@ -293,6 +330,25 @@ h2 {
   margin-top: 7px;
   color: var(--rose);
   font-size: 10px;
+}
+.inline-profile-form[data-error] {
+  animation: inline-profile-shake 240ms ease-out;
+}
+@keyframes inline-profile-shake {
+  25% {
+    transform: translateX(-3px);
+  }
+  50% {
+    transform: translateX(3px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inline-profile-form[data-error] {
+    animation: none;
+  }
 }
 .profile-inline-error {
   margin: 7px 0 0;
