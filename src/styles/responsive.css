@@ -1,0 +1,77 @@
+@media (max-width: 760px) {
+  .site-header,
+  .page-shell,
+  footer {
+    width: min(100% - 28px, 1180px);
+  }
+  .site-header nav {
+    gap: 10px;
+  }
+  .demo-badge {
+    display: none;
+  }
+  .profile-block {
+    grid-template-columns: 44px 1fr;
+    align-items: start;
+  }
+  .profile-mark {
+    width: 44px;
+    height: 44px;
+  }
+  .stats {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .entry-grid {
+    grid-template-columns: 1fr;
+  }
+  .day-group {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .entry-image {
+    height: 320px;
+  }
+  .empty-copy {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .upload-page {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .page-intro {
+    position: static;
+  }
+  .page-intro h1 {
+    max-width: 12ch;
+  }
+  .drop-zone {
+    min-height: 280px;
+  }
+  .viewer-heading {
+    grid-template-columns: 1fr auto;
+  }
+  .viewer-heading > div {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    text-align: left;
+  }
+  .viewer-heading > .visibility {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .pixel-stage {
+    min-height: 52vh;
+  }
+  .viewer-controls {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .viewer-controls > span:last-child {
+    width: 100%;
+    margin: 0;
+  }
+}

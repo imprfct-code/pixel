@@ -5,19 +5,30 @@
   "type": "module",
   "scripts": {
     "dev": "vp dev",
+    "dev:backend": "convex dev",
     "build": "tsc -b && vp build",
+    "check": "vp check",
+    "test": "vp test",
     "lint": "vp lint",
     "preview": "vp preview"
   },
   "dependencies": {
+    "@clerk/react": "6.15.1",
+    "@convex-dev/r2": "0.10.2",
+    "@fontsource-variable/geist-mono": "5.3.0",
+    "convex": "1.45.0",
+    "lucide-react": "1.40.0",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-router": "7.14.0"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "5.0.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
+    "convex-test": "0.0.56",
     "typescript": "~6.0.2",
     "vite": "catalog:",
     "vite-plus": "catalog:"

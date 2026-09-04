@@ -1,0 +1,186 @@
+.upload-page {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.65fr) 1.35fr;
+  gap: clamp(48px, 8vw, 112px);
+}
+.page-intro {
+  position: sticky;
+  top: 48px;
+  align-self: start;
+}
+.page-intro h1 {
+  max-width: 8ch;
+  margin-top: 10px;
+}
+.page-intro > p:last-child,
+.sign-in-gate > p {
+  max-width: 400px;
+  color: #777;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.upload-form {
+  display: grid;
+  gap: 24px;
+}
+.drop-zone {
+  position: relative;
+  display: grid;
+  min-height: 340px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed #373737;
+  background: #0e0e0e;
+  outline: none;
+}
+.drop-zone:focus,
+.drop-zone.is-dragging {
+  border-color: var(--rose);
+  background: #120f0f;
+}
+.drop-zone.has-file {
+  border-style: solid;
+}
+.drop-zone > img {
+  max-width: 86%;
+  max-height: 300px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.drop-prompt {
+  display: grid;
+  place-items: center;
+  gap: 10px;
+  padding: 48px;
+  background: transparent;
+  border: 0;
+}
+.drop-prompt strong {
+  font-size: 12px;
+}
+.drop-prompt span {
+  color: #5e5e5e;
+  font-size: 9px;
+}
+.remove-file {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #333;
+  background: #0a0a0a;
+}
+.file-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 13px;
+  background: rgba(10, 10, 10, 0.92);
+  border-top: 1px solid #272727;
+  font-size: 9px;
+}
+.file-caption span {
+  color: #666;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+.form-fields {
+  display: grid;
+  gap: 21px;
+}
+.form-fields label:not(.checkbox),
+fieldset {
+  display: grid;
+  gap: 8px;
+  color: #aaa;
+  font-size: 10px;
+  text-transform: lowercase;
+}
+.form-fields label > span {
+  color: #4f4f4f;
+}
+input,
+textarea {
+  width: 100%;
+  padding: 11px 12px;
+  background: #0e0e0e;
+  border: 1px solid #292929;
+  border-radius: 0;
+  outline: none;
+  font-size: 11px;
+  resize: vertical;
+}
+input:focus,
+textarea:focus {
+  border-color: #626262;
+}
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+legend {
+  margin-bottom: 8px;
+}
+fieldset small {
+  color: #535353;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.segmented button,
+.scale-control button,
+.checker-control {
+  min-height: 34px;
+  background: #0d0d0d;
+  border: 1px solid #292929;
+  color: #666;
+  font-size: 9px;
+}
+.segmented button + button,
+.scale-control button + button {
+  border-left: 0;
+}
+.segmented button[data-active="true"],
+.scale-control button[data-active="true"],
+.checker-control[data-active="true"] {
+  background: #e2e2e2;
+  color: #0a0a0a;
+}
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #888;
+  font-size: 10px;
+}
+.checkbox input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--rose);
+}
+.form-error {
+  margin: 0;
+  color: #df8b8e;
+  font-size: 10px;
+}
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 4px;
+}

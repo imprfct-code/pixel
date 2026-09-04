@@ -2,7 +2,9 @@ import react from "@vitejs/plugin-react";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig({
-  fmt: {},
+  fmt: {
+    printWidth: 100,
+  },
   lint: {
     plugins: ["react", "typescript", "oxc"],
     rules: {
@@ -22,4 +24,7 @@ export default defineConfig({
     ],
   },
   plugins: lazyPlugins(() => [react()]),
+  test: {
+    include: ["src/**/*.test.{ts,tsx}", "convex/**/*.test.ts"],
+  },
 });
