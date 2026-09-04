@@ -6,8 +6,17 @@ export interface UserSummary {
   id: string;
   username: string;
   displayName: string | null;
+  bio: string | null;
+  website: string | null;
   practiceStartedAt: string;
   avatarUrl?: string;
+}
+
+export interface ProfileInput {
+  username: string;
+  displayName?: string;
+  bio?: string;
+  website?: string;
 }
 
 export interface Entry {

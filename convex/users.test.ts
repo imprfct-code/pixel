@@ -38,4 +38,37 @@ describe("users", () => {
       "Unauthenticated",
     );
   });
+
+  it("updates profile fields and protects usernames", async () => {
+    const base = convexTest(schema, modules);
+    const first = base.withIdentity({
+      issuer: "https://clerk.pixel.test",
+      subject: "user_1",
+      tokenIdentifier: "https://clerk.pixel.test|user_1",
+    });
+    const second = base.withIdentity({
+      issuer: "https://clerk.pixel.test",
+      subject: "user_2",
+      tokenIdentifier: "https://clerk.pixel.test|user_2",
+    });
+
+    await first.mutation(api.users.getOrCreate, { username: "first" });
+    await second.mutation(api.users.getOrCreate, { username: "second" });
+    await first.mutation(api.users.updateProfile, {
+      username: "new.name",
+      displayName: "New Name",
+      bio: "Pixel studies",
+      website: "https://pixel.test",
+    });
+
+    expect(await first.query(api.users.current)).toMatchObject({
+      username: "newname",
+      displayName: "New Name",
+      bio: "Pixel studies",
+      website: "https://pixel.test",
+    });
+    await expect(second.mutation(api.users.updateProfile, { username: "newname" })).rejects.toThrow(
+      "Username already taken",
+    );
+  });
 });

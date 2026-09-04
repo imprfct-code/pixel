@@ -1,0 +1,126 @@
+.auth-page,
+.setup-page {
+  min-height: 100vh;
+}
+.auth-page {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.7fr) 1fr;
+}
+.auth-wordmark {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 10px;
+  margin: 28px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.auth-wordmark img {
+  width: 19px;
+  height: 19px;
+}
+.auth-panel {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  border-left: 1px solid var(--line);
+  background: #0d0d0d;
+}
+.setup-page {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 13px;
+}
+.setup-page img {
+  width: 40px;
+  height: 40px;
+}
+.setup-page h1 {
+  margin: 4px 0;
+}
+.setup-page p,
+.setup-page code {
+  margin: 0;
+  color: #777;
+  font-size: 11px;
+}
+.setup-page code {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+}
+
+.settings-page {
+  width: min(620px, 100%);
+  margin: 0 auto;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #777;
+  font-size: 10px;
+}
+.settings-heading {
+  padding: 38px 0 44px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-heading h1 {
+  margin: 10px 0 0;
+}
+.settings-form {
+  display: grid;
+  gap: 22px;
+  padding-top: 28px;
+}
+.settings-form > label {
+  display: grid;
+  gap: 8px;
+  color: #aaa;
+  font-size: 10px;
+}
+.settings-form textarea {
+  min-height: 96px;
+}
+.avatar-setting {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.avatar-setting img {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #3a2929;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.avatar-setting input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+.settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 4px;
+}
+.settings-actions span {
+  color: #6f8f70;
+  font-size: 10px;
+}
+
+@media (max-width: 680px) {
+  .auth-page {
+    display: block;
+  }
+  .auth-panel {
+    min-height: calc(100vh - 72px);
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+}

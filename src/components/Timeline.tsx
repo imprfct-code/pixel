@@ -1,4 +1,4 @@
-import { LockKeyhole, Share2 } from "lucide-react";
+import { ArrowDown, ArrowUp, LockKeyhole, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import type { Entry } from "../../shared/pixel";
@@ -33,17 +33,9 @@ function dateLabel(value: string) {
     .toLowerCase();
 }
 
-function groupEntries(entries: Entry[]) {
-  const groups = new Map<string, Entry[]>();
-  for (const entry of entries) {
-    const label = dateLabel(entry.createdAt);
-    groups.set(label, [...(groups.get(label) ?? []), entry]);
-  }
-  return Array.from(groups);
-}
-
 export function Timeline({ entries }: { entries: Entry[] }) {
   const [openEntry, setOpenEntry] = useState<Entry>();
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
 
   if (entries.length === 0) {
     return (
@@ -80,53 +72,52 @@ export function Timeline({ entries }: { entries: Entry[] }) {
     );
   }
 
+  const sortedEntries = [...entries].sort((left, right) => {
+    const difference = new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    return sort === "newest" ? difference : -difference;
+  });
+
   return (
     <section className="timeline" aria-labelledby="timeline-heading">
       <div className="section-heading">
         <h2 id="timeline-heading">timeline</h2>
-        <span>newest first</span>
-      </div>
-      {groupEntries(entries).map(([label, items]) => (
-        <div className="day-group" key={label}>
-          <div className="day-label">
-            <span>{label}</span>
-            <small>
-              {items.length} {items.length === 1 ? "piece" : "pieces"}
-            </small>
-          </div>
-          <div className="entry-grid">
-            {items.map((entry) => (
-              <article className="entry-card" key={entry.id}>
-                <button
-                  className="entry-image"
-                  type="button"
-                  onClick={() => setOpenEntry(entry)}
-                  data-drop-exclude="true"
-                  aria-label={`Open ${entry.title ?? entry.originalFilename}`}
-                >
-                  <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
-                </button>
-                <div className="entry-meta">
-                  <Link to={`/entries/${entry.id}`}>
-                    <strong>{entry.title ?? entry.originalFilename}</strong>
-                  </Link>
-                  <span>
-                    {entry.width}×{entry.height}
-                  </span>
-                  <span className="visibility">
-                    {entry.visibility === "private" ? (
-                      <LockKeyhole size={11} />
-                    ) : (
-                      <Share2 size={11} />
-                    )}
-                    {entry.visibility}
-                  </span>
-                </div>
-              </article>
-            ))}
-          </div>
+        <div className="timeline-sort" aria-label="Sort timeline">
+          <button type="button" aria-pressed={sort === "newest"} onClick={() => setSort("newest")}>
+            <ArrowDown size={11} /> newest
+          </button>
+          <button type="button" aria-pressed={sort === "oldest"} onClick={() => setSort("oldest")}>
+            <ArrowUp size={11} /> oldest
+          </button>
         </div>
-      ))}
+      </div>
+      <div className="entry-grid">
+        {sortedEntries.map((entry) => (
+          <article className="entry-card" key={entry.id}>
+            <button
+              className="entry-image"
+              type="button"
+              onClick={() => setOpenEntry(entry)}
+              data-drop-exclude="true"
+              aria-label={`Open ${entry.title ?? entry.originalFilename}`}
+            >
+              <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
+            </button>
+            <div className="entry-meta">
+              <Link to={`/entries/${entry.id}`}>
+                <strong>{entry.title ?? entry.originalFilename}</strong>
+              </Link>
+              <span>{dateLabel(entry.createdAt)}</span>
+              <span>
+                {entry.width}×{entry.height}
+              </span>
+              <span className="visibility">
+                {entry.visibility === "private" ? <LockKeyhole size={11} /> : <Share2 size={11} />}
+                {entry.visibility}
+              </span>
+            </div>
+          </article>
+        ))}
+      </div>
       {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
     </section>
   );

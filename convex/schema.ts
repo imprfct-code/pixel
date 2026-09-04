@@ -8,6 +8,8 @@ export default defineSchema({
     tokenIdentifier: v.string(),
     username: v.string(),
     displayName: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    website: v.optional(v.string()),
     practiceStartedAt: v.number(),
   })
     .index("by_token", ["tokenIdentifier"])

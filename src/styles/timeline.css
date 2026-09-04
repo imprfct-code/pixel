@@ -60,28 +60,33 @@
   cursor: not-allowed;
   opacity: 0.38;
 }
-.day-group {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  padding: 24px 0 44px;
-  border-top: 1px solid #171717;
+.timeline-sort {
+  display: flex;
+  border: 1px solid var(--line);
 }
-.day-label {
-  display: grid;
-  align-content: start;
-  gap: 7px;
-  color: #aaa;
-  font-size: 10px;
-}
-.day-label small {
-  color: #4e4e4e;
-  font-size: 8px;
+.timeline-sort button {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 0;
+  background: transparent;
+  color: #555;
+  font-size: 9px;
   text-transform: uppercase;
+}
+.timeline-sort button + button {
+  border-left: 1px solid var(--line);
+}
+.timeline-sort button[aria-pressed="true"] {
+  background: #1a1a1a;
+  color: #ddd;
 }
 .entry-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
 }
 .entry-card {
   min-width: 0;
@@ -93,8 +98,8 @@
 }
 .entry-image {
   display: grid;
-  height: 260px;
   width: 100%;
+  aspect-ratio: 1;
   padding: 0;
   place-items: center;
   overflow: hidden;
@@ -122,8 +127,8 @@
 .entry-meta {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 7px 12px;
-  padding: 12px;
+  gap: 6px 8px;
+  padding: 9px;
   border-top: 1px solid var(--line);
   font-size: 9px;
 }
@@ -143,9 +148,6 @@
   color: #696969;
   font-size: 9px;
   text-transform: uppercase;
-}
-.entry-meta .visibility {
-  grid-column: 1 / -1;
 }
 .visibility.large {
   align-self: center;

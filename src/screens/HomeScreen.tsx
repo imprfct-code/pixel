@@ -18,6 +18,12 @@ export function HomeScreen({ user, entries }: { user: UserSummary; entries: Entr
         <div className="profile-copy">
           <h1>@{user.username}</h1>
           {user.displayName && <p className="profile-note">{user.displayName}</p>}
+          {user.bio && <p className="profile-bio">{user.bio}</p>}
+          {user.website && (
+            <a className="profile-link" href={user.website} target="_blank" rel="noreferrer">
+              {user.website.replace(/^https?:\/\//, "")}
+            </a>
+          )}
         </div>
         <dl className="stats">
           <div>

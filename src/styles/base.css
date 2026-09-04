@@ -74,7 +74,8 @@ footer {
   width: 18px;
   height: 18px;
 }
-.header-upload {
+.header-upload,
+.header-settings {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -82,6 +83,7 @@ footer {
   font-size: 12px;
 }
 .header-upload:hover,
+.header-settings:hover,
 .back-link:hover {
   color: #fff;
 }
@@ -89,14 +91,6 @@ footer {
   width: 26px;
   height: 26px;
   border-radius: 0;
-}
-.demo-badge {
-  padding: 4px 6px;
-  border: 1px solid #343434;
-  color: #888;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 .page-shell {
   min-height: calc(100vh - 120px);
@@ -174,6 +168,19 @@ h2 {
   margin: 0;
   color: #777;
   font-size: 12px;
+}
+.profile-bio {
+  max-width: 52ch;
+  margin: 13px 0 0;
+  color: #9a9a9a;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.profile-link {
+  display: inline-block;
+  margin-top: 7px;
+  color: var(--rose);
+  font-size: 10px;
 }
 .stats {
   display: flex;

@@ -2,13 +2,14 @@ import { useUser, UserButton } from "@clerk/react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { api } from "../convex/_generated/api";
-import type { Entry, UploadInput, UserSummary } from "../shared/pixel";
+import type { Entry, ProfileInput, UploadInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
 
 export function LivePixel() {
   const { user: clerkUser } = useUser();
   const currentUser = useQuery(api.users.current);
   const ensureUser = useMutation(api.users.getOrCreate);
+  const saveProfile = useMutation(api.users.updateProfile);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const beginUpload = useMutation(api.entries.beginUpload);
   const finalizeUpload = useAction(api.entries.finalizeUpload);
@@ -28,8 +29,10 @@ export function LivePixel() {
     id: currentUser._id,
     username: currentUser.username,
     displayName: currentUser.displayName ?? null,
+    bio: currentUser.bio ?? null,
+    website: currentUser.website ?? null,
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
-    avatarUrl: "/avatar.png",
+    avatarUrl: clerkUser?.imageUrl ?? "/avatar.png",
   };
 
   async function upload(input: UploadInput) {
@@ -54,12 +57,24 @@ export function LivePixel() {
     return entryId;
   }
 
+  async function updateProfile(input: ProfileInput) {
+    await saveProfile(input);
+  }
+
+  async function updateAvatar(file: File) {
+    if (!clerkUser) throw new Error("User not loaded");
+    await clerkUser.setProfileImage({ file });
+    await clerkUser.reload();
+  }
+
   return (
     <PixelApp
       user={user}
       entries={(entries ?? []) as Entry[]}
       loading={entries === undefined}
       onUpload={upload}
+      onSaveProfile={updateProfile}
+      onAvatarUpload={updateAvatar}
       account={<UserButton appearance={{ elements: { avatarBox: "account-avatar" } }} />}
     />
   );
