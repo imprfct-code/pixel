@@ -1,21 +1,57 @@
 import { Download, Minus, Plus, X } from "lucide-react";
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type WheelEvent,
+} from "react";
 import type { Entry } from "../../shared/pixel";
 import { downloadImage } from "../lib/image";
 import { ArtworkImage } from "./ArtworkImage";
 
-const ZOOMS = [1, 2, 4, 8, 16] as const;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 16;
+const BUTTON_ZOOM_FACTOR = 1.25;
+
+function clampZoom(zoom: number) {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+function zoomLabel(zoom: number) {
+  return `${Number(zoom.toFixed(2))}×`;
+}
 
 export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () => void }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
-  const [zoomIndex, setZoomIndex] = useState(
-    entry.width <= 64 ? 3 : entry.width <= 256 ? 2 : entry.width <= 512 ? 1 : 0,
+  const zoomAnchorRef = useRef<
+    | {
+        clientX: number;
+        clientY: number;
+        imageX: number;
+        imageY: number;
+      }
+    | undefined
+  >(undefined);
+  const [zoom, setZoom] = useState(
+    entry.width <= 64 ? 8 : entry.width <= 256 ? 4 : entry.width <= 512 ? 2 : 1,
   );
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const [dragging, setDragging] = useState(false);
-  const zoom = ZOOMS[zoomIndex];
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    const anchor = zoomAnchorRef.current;
+    const image = canvas?.querySelector("img");
+    if (!canvas || !anchor || !image) return;
+    const imageRect = image.getBoundingClientRect();
+    canvas.scrollLeft += imageRect.left + imageRect.width * anchor.imageX - anchor.clientX;
+    canvas.scrollTop += imageRect.top + imageRect.height * anchor.imageY - anchor.clientY;
+    zoomAnchorRef.current = undefined;
+  }, [zoom]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -23,15 +59,31 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
       if (event.key === "+" || event.key === "=") {
-        setZoomIndex((current) => Math.min(current + 1, ZOOMS.length - 1));
+        event.preventDefault();
+        changeZoom(BUTTON_ZOOM_FACTOR);
       }
-      if (event.key === "-") setZoomIndex((current) => Math.max(current - 1, 0));
+      if (event.key === "-") {
+        event.preventDefault();
+        changeZoom(1 / BUTTON_ZOOM_FACTOR);
+      }
       const canvas = canvasRef.current;
       if (!canvas) return;
-      if (event.key === "ArrowLeft") canvas.scrollBy({ left: -80 });
-      if (event.key === "ArrowRight") canvas.scrollBy({ left: 80 });
-      if (event.key === "ArrowUp") canvas.scrollBy({ top: -80 });
-      if (event.key === "ArrowDown") canvas.scrollBy({ top: 80 });
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        canvas.scrollBy({ left: -80 });
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        canvas.scrollBy({ left: 80 });
+      }
+      if (event.key === "ArrowUp") {
+        event.preventDefault();
+        canvas.scrollBy({ top: -80 });
+      }
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        canvas.scrollBy({ top: 80 });
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => {
@@ -40,11 +92,26 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
     };
   }, [onClose]);
 
+  function changeZoom(factor: number, clientX?: number, clientY?: number) {
+    const canvas = canvasRef.current;
+    const image = canvas?.querySelector("img");
+    if (!canvas || !image) return;
+    const canvasRect = canvas.getBoundingClientRect();
+    const imageRect = image.getBoundingClientRect();
+    const x = clientX ?? canvasRect.left + canvas.clientWidth / 2;
+    const y = clientY ?? canvasRect.top + canvas.clientHeight / 2;
+    zoomAnchorRef.current = {
+      clientX: x,
+      clientY: y,
+      imageX: (x - imageRect.left) / imageRect.width,
+      imageY: (y - imageRect.top) / imageRect.height,
+    };
+    setZoom((current) => clampZoom(current * factor));
+  }
+
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
     event.preventDefault();
-    setZoomIndex((current) =>
-      event.deltaY < 0 ? Math.min(current + 1, ZOOMS.length - 1) : Math.max(current - 1, 0),
-    );
+    changeZoom(Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY);
   }
 
   function startPan(event: PointerEvent<HTMLDivElement>) {
@@ -104,17 +171,17 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
         <div className="lightbox-actions">
           <button
             type="button"
-            onClick={() => setZoomIndex((current) => Math.max(current - 1, 0))}
-            disabled={zoomIndex === 0}
+            onClick={() => changeZoom(1 / BUTTON_ZOOM_FACTOR)}
+            disabled={zoom <= MIN_ZOOM}
             aria-label="Zoom out"
           >
             <Minus size={16} />
           </button>
-          <span>{zoom}×</span>
+          <span>{zoomLabel(zoom)}</span>
           <button
             type="button"
-            onClick={() => setZoomIndex((current) => Math.min(current + 1, ZOOMS.length - 1))}
-            disabled={zoomIndex === ZOOMS.length - 1}
+            onClick={() => changeZoom(BUTTON_ZOOM_FACTOR)}
+            disabled={zoom >= MAX_ZOOM}
             aria-label="Zoom in"
           >
             <Plus size={16} />
