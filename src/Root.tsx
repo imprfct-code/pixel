@@ -8,7 +8,7 @@ import { FeedScreen } from "./screens/FeedScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
 import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
 
-const PROTECTED_PATHS = ["/profile", "/upload", "/settings", "/entries/:entryId"];
+const PROTECTED_PATHS = ["/profile", "/upload", "/entries/:entryId"];
 const CLERK_APPEARANCE = {
   variables: {
     colorPrimary: "#c7787a",

@@ -102,10 +102,13 @@
   min-height: 112px;
   padding: 12px 12px 12px 24px;
   border-bottom: 1px solid var(--line);
+  cursor: pointer;
   transition: background 120ms ease;
 }
-.timeline-entry:hover {
+.timeline-entry:hover,
+.timeline-entry:focus-visible {
   background: #0e0e0e;
+  outline: 0;
 }
 .timeline-dot {
   position: absolute;
@@ -136,7 +139,6 @@
   place-items: center;
   overflow: hidden;
   border: 1px solid #292929;
-  cursor: zoom-in;
   background-color: #111;
   background-image:
     linear-gradient(45deg, #171717 25%, transparent 25%),

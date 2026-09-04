@@ -1,4 +1,4 @@
-import { Check, Plus, Settings, Share2, X } from "lucide-react";
+import { Check, Plus, Share2, X } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import type {
@@ -10,7 +10,6 @@ import type {
 } from "../shared/pixel";
 import { GlobalDrop } from "./components/GlobalDrop";
 import { HomeScreen } from "./screens/HomeScreen";
-import { SettingsScreen } from "./screens/SettingsScreen";
 import { UploadScreen } from "./screens/UploadScreen";
 import { ViewerScreen } from "./screens/ViewerScreen";
 
@@ -62,9 +61,6 @@ export function PixelApp({
             <button className="header-upload" type="button" onClick={() => openUpload()}>
               <Plus size={14} /> new entry
             </button>
-            <Link className="header-settings" to="/settings" aria-label="Settings">
-              <Settings size={14} /> settings
-            </Link>
             {account}
           </nav>
         </header>
@@ -101,9 +97,6 @@ export function PixelApp({
                 }}
               />
             </>
-          )}
-          {pathname === "/settings" && (
-            <SettingsScreen user={user} onSave={onSaveProfile} onAvatarUpload={onAvatarUpload} />
           )}
           {pathname.startsWith("/entries/") && (
             <ViewerScreen

@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, LockKeyhole, Share2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import type { Entry } from "../../shared/pixel";
 import { ArtworkImage } from "./ArtworkImage";
 import { ImageLightbox } from "./ImageLightbox";
@@ -39,6 +39,7 @@ export function Timeline({
   entries: Entry[];
   linkEntries?: boolean;
 }) {
+  const navigate = useNavigate();
   const [openEntry, setOpenEntry] = useState<Entry>();
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
 
@@ -108,26 +109,31 @@ export function Timeline({
       </div>
       <div className="entry-timeline">
         {sortedEntries.map((entry, index) => (
-          <article className="timeline-entry" key={entry.id}>
+          <article
+            className="timeline-entry"
+            key={entry.id}
+            role={linkEntries ? "link" : "button"}
+            tabIndex={0}
+            data-drop-exclude="true"
+            aria-label={`Open ${entry.title ?? entry.originalFilename}`}
+            onClick={() => {
+              if (linkEntries) void navigate(`/entries/${entry.id}`);
+              else setOpenEntry(entry);
+            }}
+            onKeyDown={(event) => {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              if (linkEntries) void navigate(`/entries/${entry.id}`);
+              else setOpenEntry(entry);
+            }}
+          >
             <span className="timeline-dot" data-latest={index === 0 || undefined} />
-            <button
-              className="timeline-thumbnail"
-              type="button"
-              onClick={() => setOpenEntry(entry)}
-              data-drop-exclude="true"
-              aria-label={`Open ${entry.title ?? entry.originalFilename}`}
-            >
+            <div className="timeline-thumbnail">
               <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
-            </button>
+            </div>
             <div className="timeline-entry-copy">
               <div className="timeline-entry-title">
-                {linkEntries ? (
-                  <Link to={`/entries/${entry.id}`}>
-                    <strong>{entry.title ?? entry.originalFilename}</strong>
-                  </Link>
-                ) : (
-                  <strong>{entry.title ?? entry.originalFilename}</strong>
-                )}
+                <strong>{entry.title ?? entry.originalFilename}</strong>
                 <time dateTime={entry.createdAt}>{dateLabel(entry.createdAt)}</time>
               </div>
               {entry.note && <p>{entry.note}</p>}

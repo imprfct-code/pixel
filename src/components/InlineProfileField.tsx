@@ -1,7 +1,13 @@
-import { Check, Pencil, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 type ProfileFieldKind = "handle" | "displayName" | "bio" | "website";
+
+const fieldLabels: Record<ProfileFieldKind, string> = {
+  handle: "handle",
+  displayName: "display name",
+  bio: "bio",
+  website: "website",
+};
 
 export function InlineProfileField({
   kind,
@@ -16,6 +22,7 @@ export function InlineProfileField({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const savingRef = useRef(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const [saving, setSaving] = useState(false);
@@ -30,10 +37,12 @@ export function InlineProfileField({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (savingRef.current) return;
     if (draft === value) {
       setEditing(false);
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     setError("");
     try {
@@ -42,77 +51,81 @@ export function InlineProfileField({
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not save");
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
 
-  function handleEscape(event: KeyboardEvent) {
-    if (event.key !== "Escape") return;
-    event.preventDefault();
-    setDraft(value);
-    setEditing(false);
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setDraft(value);
+      setEditing(false);
+      return;
+    }
+    if (event.key === "Enter" && kind !== "bio") {
+      event.preventDefault();
+      event.currentTarget.form?.requestSubmit();
+    }
   }
 
   if (editing) {
     return (
-      <form className="inline-profile-form" data-kind={kind} onSubmit={submit}>
+      <form
+        className="inline-profile-form"
+        data-kind={kind}
+        data-saving={saving || undefined}
+        onSubmit={submit}
+      >
         {kind === "handle" && <span>@</span>}
         {kind === "bio" ? (
           <textarea
             ref={textareaRef}
+            aria-label={`Edit ${fieldLabels[kind]}`}
             rows={2}
             maxLength={240}
             value={draft}
+            onBlur={(event) => event.currentTarget.form?.requestSubmit()}
             onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={handleEscape}
+            onKeyDown={handleKeyDown}
           />
         ) : (
           <input
             ref={inputRef}
+            aria-label={`Edit ${fieldLabels[kind]}`}
             required={kind === "handle"}
             minLength={kind === "handle" ? 2 : undefined}
             maxLength={kind === "handle" ? 32 : kind === "displayName" ? 80 : 160}
+            size={Math.max(draft.length, emptyLabel.length, 2)}
             type={kind === "website" ? "url" : "text"}
             value={draft}
+            onBlur={(event) => event.currentTarget.form?.requestSubmit()}
             onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={handleEscape}
+            onKeyDown={handleKeyDown}
           />
         )}
-        <button type="submit" disabled={saving} aria-label={`Save ${kind}`}>
-          <Check size={13} />
-        </button>
-        <button type="button" onClick={() => setEditing(false)} aria-label={`Cancel ${kind}`}>
-          <X size={13} />
-        </button>
         {error && <small>{error}</small>}
       </form>
     );
   }
 
+  const displayValue = kind === "website" && value ? value.replace(/^https?:\/\//, "") : value;
+
   return (
-    <div className="inline-profile-field" data-kind={kind}>
-      {kind === "handle" && <h1>@{value}</h1>}
-      {kind === "displayName" && <p className="profile-note">{value || emptyLabel}</p>}
-      {kind === "bio" && <p className="profile-bio">{value || emptyLabel}</p>}
-      {kind === "website" &&
-        (value ? (
-          <a className="profile-link" href={value} target="_blank" rel="noreferrer">
-            {value.replace(/^https?:\/\//, "")}
-          </a>
-        ) : (
-          <span className="profile-link">{emptyLabel}</span>
-        ))}
-      <button
-        type="button"
-        onClick={() => {
-          setDraft(value);
-          setError("");
-          setEditing(true);
-        }}
-        aria-label={`Edit ${kind}`}
-      >
-        <Pencil size={11} /> edit
-      </button>
-    </div>
+    <button
+      className="inline-profile-field"
+      data-kind={kind}
+      data-empty={!value || undefined}
+      type="button"
+      onClick={() => {
+        setDraft(value);
+        setError("");
+        setEditing(true);
+      }}
+      aria-label={`Edit ${fieldLabels[kind]}`}
+    >
+      {kind === "handle" && "@"}
+      {displayValue || emptyLabel}
+    </button>
   );
 }
