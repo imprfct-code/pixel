@@ -1,7 +1,7 @@
 @media (max-width: 760px) {
   .site-header,
   .page-shell {
-    width: min(100% - 28px, 1180px);
+    width: min(100% - 28px, 1080px);
   }
   .site-header nav {
     gap: 10px;

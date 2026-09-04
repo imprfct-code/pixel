@@ -1,5 +1,5 @@
-import { LockKeyhole, Pencil, Share2 } from "lucide-react";
-import { useState } from "react";
+import { Check, LockKeyhole, Pencil, Share2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import type { Entry, EntryUpdateInput } from "../../shared/pixel";
 import { EntryEditor } from "../components/EntryEditor";
@@ -20,6 +20,22 @@ export function ViewerScreen({
   const navigate = useNavigate();
   const entry = entries.find((item) => item.id === entryId);
   const [editing, setEditing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(
+    () => () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    },
+    [],
+  );
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 1800);
+  }
 
   if (loading) return <p className="status-message">loading</p>;
   if (!entry) {
@@ -43,6 +59,16 @@ export function ViewerScreen({
         }}
         toolbarActions={
           <>
+            <button
+              className="lightbox-share"
+              type="button"
+              data-copied={copied || undefined}
+              onClick={() => void copyLink()}
+              aria-label={copied ? "Link copied" : "Copy share link"}
+            >
+              {copied ? <Check size={13} /> : <Share2 size={13} />}
+              <span aria-live="polite">{copied ? "copied" : "share"}</span>
+            </button>
             <span className="visibility large">
               {entry.visibility === "private" ? <LockKeyhole size={13} /> : <Share2 size={13} />}
               {entry.visibility}

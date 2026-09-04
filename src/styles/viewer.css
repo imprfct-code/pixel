@@ -223,6 +223,23 @@
 .lightbox-actions button:disabled {
   color: #444;
 }
+.lightbox-actions .lightbox-share {
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  color: #aaa;
+  font-size: 9px;
+  text-transform: uppercase;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+}
+.lightbox-actions .lightbox-share[data-copied="true"] {
+  background: #112016;
+  color: #86bd8c;
+}
 .lightbox-actions > span {
   min-width: 38px;
   color: #888;

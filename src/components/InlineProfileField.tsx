@@ -10,6 +10,18 @@ const fieldLabels: Record<ProfileFieldKind, string> = {
   website: "website",
 };
 
+function websiteInputValue(value: string) {
+  return value.replace(/^https?:\/\//i, "");
+}
+
+function normalizeWebsite(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const normalized = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  new URL(normalized);
+  return normalized;
+}
+
 export function InlineProfileField({
   kind,
   value,
@@ -46,7 +58,16 @@ export function InlineProfileField({
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (savingRef.current) return;
-    if (draft === value) {
+    let nextValue = draft;
+    if (kind === "website") {
+      try {
+        nextValue = normalizeWebsite(draft);
+      } catch {
+        setError("invalid URL");
+        return;
+      }
+    }
+    if (nextValue === value) {
       setEditing(false);
       return;
     }
@@ -54,7 +75,7 @@ export function InlineProfileField({
     setSaving(true);
     setError("");
     try {
-      await onSave(draft);
+      await onSave(nextValue);
       setEditing(false);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "Could not save";
@@ -112,7 +133,10 @@ export function InlineProfileField({
               required={kind === "handle"}
               minLength={kind === "handle" ? 2 : undefined}
               maxLength={kind === "handle" ? 32 : kind === "displayName" ? 80 : 160}
-              type={kind === "website" ? "url" : "text"}
+              type="text"
+              inputMode={kind === "website" ? "url" : undefined}
+              autoCapitalize={kind === "website" ? "none" : undefined}
+              spellCheck={kind === "website" ? false : undefined}
               value={draft}
               onBlur={(event) => event.currentTarget.form?.requestSubmit()}
               onChange={(event) => setDraft(event.target.value)}
@@ -125,7 +149,7 @@ export function InlineProfileField({
     );
   }
 
-  const displayValue = kind === "website" && value ? value.replace(/^https?:\/\//, "") : value;
+  const displayValue = kind === "website" && value ? websiteInputValue(value) : value;
 
   return (
     <button
@@ -134,7 +158,7 @@ export function InlineProfileField({
       data-empty={!value || undefined}
       type="button"
       onClick={() => {
-        setDraft(value);
+        setDraft(kind === "website" ? websiteInputValue(value) : value);
         setError("");
         setEditing(true);
       }}

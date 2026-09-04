@@ -1,6 +1,6 @@
 .timeline,
 .empty-timeline {
-  padding-top: 26px;
+  padding-top: 20px;
   border-top: 1px solid var(--line);
 }
 .practice-preview {
@@ -97,11 +97,10 @@
 .timeline-entry {
   position: relative;
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
-  gap: 18px;
-  min-height: 112px;
-  padding: 12px 12px 12px 24px;
-  border-bottom: 1px solid var(--line);
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 15px;
+  min-height: 96px;
+  padding: 10px 10px 10px 20px;
   cursor: pointer;
   transition: background 120ms ease;
 }
@@ -133,7 +132,7 @@
 }
 .timeline-thumbnail {
   display: grid;
-  width: 92px;
+  width: 76px;
   aspect-ratio: 1;
   padding: 0;
   place-items: center;
