@@ -35,7 +35,7 @@ export function PixelApp({
   account?: ReactNode;
 }) {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
   const openUpload = useCallback(
@@ -85,7 +85,13 @@ export function PixelApp({
                 onAvatarUpload={onAvatarUpload}
               />
               <UploadRoute
-                initialFiles={uploadFiles}
+                initialFiles={
+                  uploadFiles.length > 0
+                    ? uploadFiles
+                    : Array.isArray(state?.uploadFiles)
+                      ? state.uploadFiles
+                      : []
+                }
                 onUpload={onUpload}
                 onClose={closeUpload}
                 onComplete={(entryIds) => {
