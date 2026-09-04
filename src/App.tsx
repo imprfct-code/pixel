@@ -3,6 +3,7 @@ import { useCallback, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import type { Entry, ProfileInput, UploadInput, UserSummary } from "../shared/pixel";
 import { GlobalDrop } from "./components/GlobalDrop";
+import { ProfileLoadingSkeleton } from "./components/LoadingSkeleton";
 import { UploadNotice } from "./components/UploadNotice";
 import { HomeScreen } from "./screens/HomeScreen";
 import { UploadScreen } from "./screens/UploadScreen";
@@ -57,7 +58,7 @@ export function PixelApp({
         <main className="page-shell">
           {pathname === "/profile" &&
             (loading ? (
-              <p className="status-message">loading</p>
+              <ProfileLoadingSkeleton />
             ) : (
               <HomeScreen
                 user={user}

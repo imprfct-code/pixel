@@ -5,6 +5,7 @@ import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
 import { ClerkAvatarSync } from "./components/ClerkAvatarSync";
 import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
+import { AuthLoadingSkeleton, ProfileLoadingSkeleton } from "./components/LoadingSkeleton";
 import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
@@ -28,8 +29,8 @@ const CLERK_APPEARANCE = {
     colorRing: "#c7787a",
     colorShadow: "#000000",
     colorModalBackdrop: "rgba(0, 0, 0, 0.56)",
-    fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
-    fontFamilyButtons: '"Geist Mono Variable", ui-monospace, monospace',
+    fontFamily: '"Geist Pixel"',
+    fontFamilyButtons: '"Geist Pixel"',
     spacing: "0.75rem",
     borderRadius: "0px",
   },
@@ -96,10 +97,12 @@ const CLERK_APPEARANCE = {
       backgroundColor: "#0d0d0d",
     },
     modalContent: {
+      position: "relative",
       width: "min(860px, calc(100vw - 32px))",
       height: "min(620px, calc(100vh - 32px))",
       maxWidth: "860px",
       maxHeight: "620px",
+      margin: "auto",
       boxSizing: "border-box",
       overflow: "hidden",
       border: "1px solid #343434",
@@ -108,8 +111,10 @@ const CLERK_APPEARANCE = {
       boxShadow: "inset 0 0 0 1px #343434, 0 32px 120px rgba(0, 0, 0, 0.72)",
     },
     modalCloseButton: {
+      position: "absolute",
       top: "12px",
       right: "12px",
+      margin: "0",
       zIndex: "2",
     },
     navbar: {
@@ -184,7 +189,7 @@ function ConfiguredPixel() {
         element={
           <>
             <ClerkLoading>
-              <p className="status-message full-page">loading</p>
+              <AuthLoadingSkeleton />
             </ClerkLoading>
             <ClerkLoaded>
               <Show when="signed-out" fallback={<Navigate to="/profile" replace />}>
@@ -217,12 +222,12 @@ function ProtectedPixel() {
   return (
     <>
       <ClerkLoading>
-        <p className="status-message full-page">loading</p>
+        <ProfileLoadingSkeleton withShell />
       </ClerkLoading>
       <ClerkLoaded>
         <Show when="signed-in" fallback={<Navigate to="/sign-in" replace />}>
           <AuthLoading>
-            <p className="status-message full-page">signing in</p>
+            <ProfileLoadingSkeleton withShell />
           </AuthLoading>
           <Unauthenticated>
             <Navigate to="/sign-in" replace />

@@ -8,6 +8,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 import type { Entry, UserSummary } from "../../shared/pixel";
 import { EntryEditor } from "../components/EntryEditor";
 import { ImageLightbox } from "../components/ImageLightbox";
+import { ViewerLoadingSkeleton } from "../components/LoadingSkeleton";
 
 export function ViewerScreen() {
   const { entryId } = useParams();
@@ -45,9 +46,9 @@ export function ViewerScreen() {
     copiedTimer.current = setTimeout(() => setCopied(false), 1800);
   }
 
-  if (result === undefined) return <p className="status-message full-page">loading</p>;
+  if (result === undefined) return <ViewerLoadingSkeleton />;
   if (result?.status === "private" && !isLoaded) {
-    return <p className="status-message full-page">loading</p>;
+    return <ViewerLoadingSkeleton />;
   }
   if (result?.status === "private" && !isSignedIn) {
     const returnTo = `/entries/${entryId}`;

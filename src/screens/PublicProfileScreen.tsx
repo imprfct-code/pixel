@@ -1,7 +1,9 @@
+import { Plus } from "lucide-react";
 import { useQuery } from "convex/react";
 import { Link, useParams } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Entry, UserSummary } from "../../shared/pixel";
+import { ProfileLoadingSkeleton } from "../components/LoadingSkeleton";
 import { ProfileShortcut } from "../components/ProfileShortcut";
 import { HomeScreen } from "./HomeScreen";
 
@@ -15,10 +17,15 @@ export function PublicProfileScreen() {
         <Link className="wordmark" to="/" aria-label="Pixel feed">
           <img src="/pixel.svg" alt="" /> Pixel
         </Link>
-        <ProfileShortcut />
+        <nav>
+          <Link className="header-upload" to="/upload">
+            <Plus size={14} /> new work
+          </Link>
+          <ProfileShortcut />
+        </nav>
       </header>
       <main className="page-shell">
-        {profile === undefined && <p className="status-message">loading</p>}
+        {profile === undefined && <ProfileLoadingSkeleton />}
         {profile === null && (
           <section className="not-found">
             <h1>Profile not found</h1>

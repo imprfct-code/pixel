@@ -189,16 +189,19 @@
 
 @media (max-width: 760px) {
   .cl-modalBackdrop {
-    align-items: flex-start !important;
+    align-items: safe center !important;
+    justify-content: center !important;
     padding: 8px !important;
     overflow-y: auto !important;
     background: rgba(0, 0, 0, 0.56) !important;
   }
   .cl-modalContent {
+    position: relative !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
+    margin: auto !important;
     overflow: hidden !important;
   }
   .cl-userProfile-root .cl-pageScrollBox {
@@ -207,8 +210,11 @@
     overflow: visible !important;
   }
   .cl-modalCloseButton {
+    position: absolute !important;
     top: 12px !important;
     right: 12px !important;
+    margin: 0 !important;
+    transform: none !important;
   }
 }
 

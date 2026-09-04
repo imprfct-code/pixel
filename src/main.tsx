@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
-import "@fontsource-variable/geist-mono";
+import "@fontsource/geist-pixel";
 import { Root } from "./Root";
 import "./index.css";
 

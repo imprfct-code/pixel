@@ -1,11 +1,11 @@
 import { AuthenticateWithRedirectCallback } from "@clerk/react";
+import { AuthLoadingSkeleton } from "../components/LoadingSkeleton";
 
 export function SSOCallbackScreen() {
   return (
-    <main className="auth-callback">
-      <img src="/pixel.svg" alt="" />
-      <span>signing in</span>
+    <>
+      <AuthLoadingSkeleton />
       <AuthenticateWithRedirectCallback />
-    </main>
+    </>
   );
 }

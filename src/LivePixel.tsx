@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { api } from "../convex/_generated/api";
 import type { Entry, ProfileInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
+import { ProfileLoadingSkeleton } from "./components/LoadingSkeleton";
 import { usePixelUpload } from "./hooks/usePixelUpload";
 
 export function LivePixel() {
@@ -24,7 +25,7 @@ export function LivePixel() {
     });
   }, [clerkUser, currentUser, ensureUser]);
 
-  if (!currentUser) return <p className="status-message full-page">loading</p>;
+  if (!currentUser) return <ProfileLoadingSkeleton withShell />;
 
   const user: UserSummary = {
     id: currentUser._id,
