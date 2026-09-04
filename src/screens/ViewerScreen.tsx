@@ -20,7 +20,7 @@ export function ViewerScreen() {
   );
   const updateEntry = useMutation(api.entries.updateMine);
   const removeEntry = useMutation(api.entries.removeMine);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(location.state?.edit === true);
   const [copied, setCopied] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const requestedReturnTo = location.state?.returnTo;
@@ -89,7 +89,7 @@ export function ViewerScreen() {
                 onClick={() => void copyLink()}
               >
                 {copied ? <Check size={16} /> : <Share2 size={16} />}
-                <span aria-live="polite">{copied ? "link copied" : "share work"}</span>
+                <span aria-live="polite">{copied ? "copied" : "share"}</span>
               </button>
             )}
           </>

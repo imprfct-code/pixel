@@ -186,7 +186,7 @@
   transform: none;
 }
 .feed-card-actions > button,
-.feed-card-more > summary {
+.feed-card-more-trigger {
   display: grid;
   width: 30px;
   height: 30px;
@@ -199,14 +199,11 @@
   cursor: pointer;
   backdrop-filter: blur(4px);
 }
-.feed-card-more > summary::-webkit-details-marker {
-  display: none;
-}
 .feed-card-actions > button:hover,
 .feed-card-actions > button:focus-visible,
-.feed-card-more > summary:hover,
-.feed-card-more > summary:focus-visible,
-.feed-card-more[open] > summary {
+.feed-card-more-trigger:hover,
+.feed-card-more-trigger:focus-visible,
+.feed-card-more[data-open="true"] > .feed-card-more-trigger {
   border-color: #666;
   color: #fff;
   outline: 0;

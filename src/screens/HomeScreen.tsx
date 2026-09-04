@@ -189,13 +189,21 @@ export function HomeScreen({
               </div>
             )}
             <ArtworkGrid
-              works={visibleEntries.map((entry) => ({ entry, author: user }))}
+              works={visibleEntries.map((entry) => ({ entry, author: user, canEdit: editable }))}
               layout="masonry"
               visibilityControls={editable}
               onOpen={(entry) =>
                 void navigate(`/entries/${entry.id}`, {
                   state: { returnTo: editable ? "/profile" : `/${user.username}` },
                 })
+              }
+              onEdit={
+                editable
+                  ? (entry) =>
+                      void navigate(`/entries/${entry.id}`, {
+                        state: { returnTo: "/profile", edit: true },
+                      })
+                  : undefined
               }
             />
           </>

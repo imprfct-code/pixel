@@ -5,6 +5,7 @@ import {
   Download,
   ExternalLink,
   MoreHorizontal,
+  Pencil,
   Search,
   Share2,
 } from "lucide-react";
@@ -18,6 +19,7 @@ import { ArtworkImage } from "./ArtworkImage";
 export type ArtworkGridItem = {
   entry: Entry;
   author: UserSummary;
+  canEdit?: boolean;
 };
 
 function cardSize(width: number, height: number, index: number) {
@@ -28,16 +30,20 @@ function cardSize(width: number, height: number, index: number) {
 }
 
 function ArtworkCard({
-  item: { entry, author },
+  item: { entry, author, canEdit },
   index,
   onOpen,
+  onEdit,
 }: {
   item: ArtworkGridItem;
   index: number;
   onOpen: (entry: Entry) => void;
+  onEdit?: (entry: Entry) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(
     () => () => {
@@ -45,6 +51,26 @@ function ArtworkCard({
     },
     [],
   );
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const closeOutside = (event: PointerEvent | FocusEvent) => {
+      if (event.target instanceof Node && !menuRef.current?.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    };
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOutside, true);
+    document.addEventListener("focusin", closeOutside, true);
+    document.addEventListener("keydown", closeWithEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOutside, true);
+      document.removeEventListener("focusin", closeOutside, true);
+      document.removeEventListener("keydown", closeWithEscape);
+    };
+  }, [menuOpen]);
 
   async function copyLink() {
     await navigator.clipboard.writeText(
@@ -78,22 +104,51 @@ function ArtworkCard({
             {copied ? <Check size={13} /> : <Share2 size={13} />}
           </button>
         )}
-        <details className="feed-card-more">
-          <summary aria-label="More actions" title="More actions">
+        <div ref={menuRef} className="feed-card-more" data-open={menuOpen || undefined}>
+          <button
+            className="feed-card-more-trigger"
+            type="button"
+            aria-label="More actions"
+            aria-expanded={menuOpen}
+            title="More actions"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
             <MoreHorizontal size={15} />
-          </summary>
-          <div>
-            <button type="button" onClick={() => onOpen(entry)}>
-              <ExternalLink size={12} /> open
-            </button>
-            <button
-              type="button"
-              onClick={() => void downloadImage(entry.imageUrl, entry.originalFilename)}
-            >
-              <Download size={12} /> download
-            </button>
-          </div>
-        </details>
+          </button>
+          {menuOpen && (
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  onOpen(entry);
+                }}
+              >
+                <ExternalLink size={12} /> open
+              </button>
+              {canEdit && onEdit && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    onEdit(entry);
+                  }}
+                >
+                  <Pencil size={12} /> edit
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  void downloadImage(entry.imageUrl, entry.originalFilename);
+                }}
+              >
+                <Download size={12} /> download
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       <Link className="feed-card-author" to={`/${author.username}`}>
         <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
@@ -111,9 +166,11 @@ function columnCount(width: number, itemCount: number) {
 function MasonryBoard({
   works,
   onOpen,
+  onEdit,
 }: {
   works: ArtworkGridItem[];
   onOpen: (entry: Entry) => void;
+  onEdit?: (entry: Entry) => void;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState(() => Math.max(1, Math.min(works.length, 4)));
@@ -144,7 +201,13 @@ function MasonryBoard({
       {groups.map((group, column) => (
         <div className="masonry-column" key={column}>
           {group.map((item, index) => (
-            <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
+            <ArtworkCard
+              item={item}
+              index={index}
+              onOpen={onOpen}
+              onEdit={onEdit}
+              key={item.entry.id}
+            />
           ))}
         </div>
       ))}
@@ -156,17 +219,27 @@ function ArtworkBoard({
   works,
   layout,
   onOpen,
+  onEdit,
 }: {
   works: ArtworkGridItem[];
   layout: "grid" | "masonry";
   onOpen: (entry: Entry) => void;
+  onEdit?: (entry: Entry) => void;
 }) {
-  if (layout === "masonry") return <MasonryBoard works={works} onOpen={onOpen} />;
+  if (layout === "masonry") {
+    return <MasonryBoard works={works} onOpen={onOpen} onEdit={onEdit} />;
+  }
 
   return (
     <div className="feed-board">
       {works.map((item, index) => (
-        <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
+        <ArtworkCard
+          item={item}
+          index={index}
+          onOpen={onOpen}
+          onEdit={onEdit}
+          key={item.entry.id}
+        />
       ))}
     </div>
   );
@@ -175,12 +248,14 @@ function ArtworkBoard({
 export function ArtworkGrid({
   works,
   onOpen,
+  onEdit,
   controls = true,
   visibilityControls = false,
   layout = "grid",
 }: {
   works: ArtworkGridItem[];
   onOpen: (entry: Entry) => void;
+  onEdit?: (entry: Entry) => void;
   controls?: boolean;
   visibilityControls?: boolean;
   layout?: "grid" | "masonry";
@@ -279,7 +354,7 @@ export function ArtworkGrid({
           {dateGroups.map((group) => (
             <section className="work-date-group" key={group.key}>
               <h2 className="work-date-divider">{group.label}</h2>
-              <ArtworkBoard works={group.works} layout={layout} onOpen={onOpen} />
+              <ArtworkBoard works={group.works} layout={layout} onOpen={onOpen} onEdit={onEdit} />
             </section>
           ))}
         </div>

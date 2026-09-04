@@ -594,7 +594,8 @@ h2 {
 .heatmap-tooltip {
   position: absolute;
   z-index: 4;
-  max-width: 250px;
+  width: max-content;
+  max-width: min(220px, calc(100vw - 32px));
   padding: 6px 8px;
   border: 1px solid #343434;
   background: #111;
@@ -606,7 +607,7 @@ h2 {
   pointer-events: none;
   transform: translate(-50%, -100%);
   transition: opacity 80ms ease;
-  white-space: pre-line;
+  white-space: pre;
 }
 .heatmap-tooltip[data-visible="true"] {
   opacity: 1;

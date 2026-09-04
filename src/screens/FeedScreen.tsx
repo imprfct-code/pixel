@@ -76,9 +76,17 @@ export function FeedScreen() {
             <FeedSkeleton />
           ) : (
             <ArtworkGrid
-              works={works as ArtworkGridItem[]}
+              works={(works as ArtworkGridItem[]).map((item) => ({
+                ...item,
+                canEdit: (mine as Entry[] | undefined)?.some((entry) => entry.id === item.entry.id),
+              }))}
               onOpen={(entry) =>
                 void navigate(`/entries/${entry.id}`, { state: { returnTo: "/" } })
+              }
+              onEdit={(entry) =>
+                void navigate(`/entries/${entry.id}`, {
+                  state: { returnTo: "/", edit: true },
+                })
               }
               controls={false}
             />
