@@ -3,8 +3,8 @@ import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
-import { ClerkAvatarSync } from "./components/ClerkAvatarSync";
 import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
+import { ClerkUserSync } from "./components/ClerkUserSync";
 import { AuthLoadingSkeleton, ProfileLoadingSkeleton } from "./components/LoadingSkeleton";
 import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
@@ -255,7 +255,7 @@ export function Root({ convexUrl, clerkKey }: { convexUrl?: string; clerkKey?: s
       appearance={CLERK_APPEARANCE}
     >
       <ConvexProviderWithClerk client={new ConvexReactClient(convexUrl)} useAuth={useAuth}>
-        <ClerkAvatarSync />
+        <ClerkUserSync />
         <ClerkEmailPrivacy />
         <ConfiguredPixel />
       </ConvexProviderWithClerk>

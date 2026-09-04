@@ -3,14 +3,35 @@ import { useMutation, useQuery } from "convex/react";
 import { useEffect, useRef } from "react";
 import { api } from "../../convex/_generated/api";
 
-export function ClerkAvatarSync() {
+export function ClerkUserSync() {
   const { isSignedIn, user } = useUser();
   const currentUser = useQuery(api.users.current, isSignedIn ? {} : "skip");
+  const ensureUser = useMutation(api.users.getOrCreate);
   const saveAvatar = useMutation(api.users.updateAvatar);
+  const provisioning = useRef(false);
   const activeAvatar = useRef<string>(undefined);
   const pendingAvatar = useRef<string>(undefined);
   const clerkAvatarUrl = user?.imageUrl;
   const savedAvatarUrl = currentUser?.avatarUrl;
+
+  useEffect(() => {
+    if (!user || currentUser !== null || provisioning.current) return;
+
+    provisioning.current = true;
+    const emailName = user.primaryEmailAddress?.emailAddress.split("@")[0];
+    void ensureUser({
+      username: user.username ?? emailName ?? `artist-${user.id.slice(-6)}`,
+      displayName: user.fullName ?? undefined,
+      avatarUrl: user.imageUrl,
+    }).then(
+      () => {
+        provisioning.current = false;
+      },
+      () => {
+        provisioning.current = false;
+      },
+    );
+  }, [currentUser, ensureUser, user]);
 
   useEffect(() => {
     if (!clerkAvatarUrl || !currentUser || savedAvatarUrl === clerkAvatarUrl) return;

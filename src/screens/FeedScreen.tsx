@@ -46,7 +46,8 @@ export function FeedScreen() {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
   const works = useQuery(api.entries.feed);
-  const mine = useQuery(api.entries.listMine, isSignedIn ? {} : "skip");
+  const currentUser = useQuery(api.users.current, isSignedIn ? {} : "skip");
+  const mine = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const upload = usePixelUpload();
   const [uploadFile, setUploadFile] = useState<File>();
   const [uploadOpen, setUploadOpen] = useState(false);
