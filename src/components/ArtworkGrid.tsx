@@ -104,7 +104,7 @@ function ArtworkCard({
 }
 
 function columnCount(width: number, itemCount: number) {
-  const maximum = width < 340 ? 2 : width < 760 ? 3 : 4;
+  const maximum = width < 300 ? 1 : width < 820 ? 2 : width < 1040 ? 3 : 4;
   return Math.max(1, Math.min(itemCount, maximum));
 }
 

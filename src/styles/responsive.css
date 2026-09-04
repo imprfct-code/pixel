@@ -49,6 +49,24 @@
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
+  .heatmap-scroll-shell::before,
+  .heatmap-scroll-shell::after {
+    position: absolute;
+    top: 0;
+    bottom: 10px;
+    z-index: 4;
+    width: 28px;
+    content: "";
+    pointer-events: none;
+  }
+  .heatmap-scroll-shell::before {
+    left: 0;
+    background: linear-gradient(90deg, #0a0a0a, transparent);
+  }
+  .heatmap-scroll-shell::after {
+    right: 0;
+    background: linear-gradient(-90deg, #0a0a0a, transparent);
+  }
   .heatmap-lens::-webkit-scrollbar {
     display: none;
   }
@@ -62,6 +80,18 @@
     width: 20px;
     flex: 0 0 20px;
     gap: 3px;
+  }
+  .work-search {
+    height: 42px;
+    gap: 9px;
+    padding: 0 12px;
+  }
+  .work-search svg {
+    width: 16px;
+    height: 16px;
+  }
+  .work-search input {
+    font-size: 12px;
   }
   .empty-copy {
     align-items: flex-start;

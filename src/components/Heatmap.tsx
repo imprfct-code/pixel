@@ -29,7 +29,10 @@ export function Heatmap({
         );
         const week = today?.parentElement;
         if (!week) return;
-        lens.scrollLeft = Math.max(0, week.offsetLeft - lens.clientWidth + week.offsetWidth + 14);
+        lens.scrollLeft = Math.max(
+          0,
+          week.offsetLeft - lens.clientWidth / 2 + week.offsetWidth / 2,
+        );
       });
     };
 
@@ -58,62 +61,64 @@ export function Heatmap({
           <span>more</span>
         </div>
       </div>
-      <div
-        ref={lensRef}
-        className="heatmap-lens"
-        onMouseMove={(event) => moveToCell(event)}
-        onMouseLeave={(event) => resetCells(event.currentTarget)}
-        onFocus={(event) => showCell(event.target)}
-        onBlur={(event) => {
-          if (!event.currentTarget.contains(event.relatedTarget)) resetCells(event.currentTarget);
-        }}
-      >
+      <div className="heatmap-scroll-shell">
         <div
-          className="heatmap-grid"
-          role="group"
-          aria-label={`${activeDays} practice days in ${year}`}
+          ref={lensRef}
+          className="heatmap-lens"
+          onMouseMove={(event) => moveToCell(event)}
+          onMouseLeave={(event) => resetCells(event.currentTarget)}
+          onFocus={(event) => showCell(event.target)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) resetCells(event.currentTarget);
+          }}
         >
-          {weeks.map((week, weekIndex) => (
-            <div className="heatmap-week" key={weekIndex}>
-              {week.map((cell, dayIndex) => {
-                const active = Boolean(cell && !cell.future && cell.count > 0);
-                const label = active && cell ? cellLabel(cell) : undefined;
-                const key = cell?.date ?? `padding-${weekIndex}-${dayIndex}`;
-                if (active && cell) {
+          <div
+            className="heatmap-grid"
+            role="group"
+            aria-label={`${activeDays} practice days in ${year}`}
+          >
+            {weeks.map((week, weekIndex) => (
+              <div className="heatmap-week" key={weekIndex}>
+                {week.map((cell, dayIndex) => {
+                  const active = Boolean(cell && !cell.future && cell.count > 0);
+                  const label = active && cell ? cellLabel(cell) : undefined;
+                  const key = cell?.date ?? `padding-${weekIndex}-${dayIndex}`;
+                  if (active && cell) {
+                    return (
+                      <button
+                        type="button"
+                        key={key}
+                        className="heatmap-cell"
+                        data-heatmap={`${weekIndex},${dayIndex}`}
+                        data-level={cell.level}
+                        data-date={cell.date}
+                        data-label={label}
+                        data-selected={selectedDate === cell.date || undefined}
+                        aria-label={`${label}. Filter works by this day`}
+                        aria-pressed={selectedDate === cell.date}
+                        onClick={() =>
+                          onSelectDate?.(selectedDate === cell.date ? undefined : cell.date)
+                        }
+                      />
+                    );
+                  }
+
                   return (
-                    <button
-                      type="button"
+                    <span
                       key={key}
                       className="heatmap-cell"
-                      data-heatmap={`${weekIndex},${dayIndex}`}
-                      data-level={cell.level}
-                      data-date={cell.date}
-                      data-label={label}
-                      data-selected={selectedDate === cell.date || undefined}
-                      aria-label={`${label}. Filter works by this day`}
-                      aria-pressed={selectedDate === cell.date}
-                      onClick={() =>
-                        onSelectDate?.(selectedDate === cell.date ? undefined : cell.date)
-                      }
+                      data-level={cell?.level ?? 0}
+                      data-date={cell?.date}
+                      data-padding={!cell || undefined}
+                      data-future={cell?.future || undefined}
                     />
                   );
-                }
-
-                return (
-                  <span
-                    key={key}
-                    className="heatmap-cell"
-                    data-level={cell?.level ?? 0}
-                    data-date={cell?.date}
-                    data-padding={!cell || undefined}
-                    data-future={cell?.future || undefined}
-                  />
-                );
-              })}
-            </div>
-          ))}
+                })}
+              </div>
+            ))}
+          </div>
+          <div className="heatmap-tooltip" role="tooltip" />
         </div>
-        <div className="heatmap-tooltip" role="tooltip" />
       </div>
     </section>
   );

@@ -32,7 +32,7 @@ function maskEmails(root: ParentNode) {
     const element = node.parentElement;
 
     if (!element) continue;
-    if (!element.closest('[class*="cl-"]')) continue;
+    if (element.closest("script, style, textarea")) continue;
     if (element.closest(".clerk-email-private, .clerk-email-revealed")) continue;
 
     EMAIL_PATTERN.lastIndex = 0;

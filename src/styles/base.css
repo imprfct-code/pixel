@@ -527,6 +527,9 @@ h2 {
   padding-top: 26px;
   margin-top: -26px;
 }
+.heatmap-scroll-shell {
+  position: relative;
+}
 .heatmap-grid {
   display: flex;
   justify-content: space-between;

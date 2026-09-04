@@ -27,7 +27,7 @@ const CLERK_APPEARANCE = {
     colorBorder: "#3a3a3a",
     colorRing: "#c7787a",
     colorShadow: "#000000",
-    colorModalBackdrop: "#050505",
+    colorModalBackdrop: "rgba(0, 0, 0, 0.56)",
     fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
     fontFamilyButtons: '"Geist Mono Variable", ui-monospace, monospace',
     spacing: "0.75rem",
@@ -106,6 +106,11 @@ const CLERK_APPEARANCE = {
       borderRadius: "0px",
       backgroundColor: "#0d0d0d",
       boxShadow: "inset 0 0 0 1px #343434, 0 32px 120px rgba(0, 0, 0, 0.72)",
+    },
+    modalCloseButton: {
+      top: "12px",
+      right: "12px",
+      zIndex: "2",
     },
     navbar: {
       width: "210px",
