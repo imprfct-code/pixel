@@ -1,16 +1,11 @@
 import { useUser, UserButton } from "@clerk/react";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { api } from "../convex/_generated/api";
 import type { Id } from "../convex/_generated/dataModel";
-import type {
-  Entry,
-  EntryUpdateInput,
-  ProfileInput,
-  UploadInput,
-  UserSummary,
-} from "../shared/pixel";
+import type { Entry, EntryUpdateInput, ProfileInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
+import { usePixelUpload } from "./hooks/usePixelUpload";
 
 export function LivePixel() {
   const { user: clerkUser } = useUser();
@@ -19,8 +14,7 @@ export function LivePixel() {
   const saveProfile = useMutation(api.users.updateProfile);
   const saveAvatar = useMutation(api.users.updateAvatar);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
-  const beginUpload = useMutation(api.entries.beginUpload);
-  const finalizeUpload = useAction(api.entries.finalizeUpload);
+  const upload = usePixelUpload();
   const updateEntryMutation = useMutation(api.entries.updateMine);
   const removeEntryMutation = useMutation(api.entries.removeMine);
 
@@ -50,32 +44,6 @@ export function LivePixel() {
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
     avatarUrl: currentUser.avatarUrl ?? clerkUser?.imageUrl ?? "/avatar.png",
   };
-
-  async function upload(input: UploadInput) {
-    const { entryId, uploadUrl } = await beginUpload({
-      originalFilename: input.file.name,
-      mimeType: input.file.type as Entry["mimeType"],
-      width: input.width,
-      height: input.height,
-      fileSize: input.file.size,
-      title: input.title,
-      note: input.note,
-      visibility: input.visibility,
-    });
-    let response: Response;
-    try {
-      response = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": input.file.type },
-        body: input.file,
-      });
-    } catch {
-      throw new Error("R2 upload is blocked. Check the bucket CORS policy");
-    }
-    if (!response.ok) throw new Error("R2 rejected the upload");
-    await finalizeUpload({ entryId });
-    return entryId;
-  }
 
   async function updateProfile(input: ProfileInput) {
     await saveProfile(input);

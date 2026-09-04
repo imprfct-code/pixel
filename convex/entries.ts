@@ -136,7 +136,7 @@ export const updateMine = mutation({
     const user = await userFromAuth(ctx);
     const entry = await ctx.db.get("entries", args.entryId);
     if (!entry || entry.userId !== user._id || entry.status !== "ready") {
-      throw new Error("Entry not found");
+      throw new Error("Work not found");
     }
     await ctx.db.patch(entry._id, {
       title: optionalText(args.title, 100),
@@ -151,7 +151,7 @@ export const removeMine = mutation({
   handler: async (ctx, { entryId }) => {
     const user = await userFromAuth(ctx);
     const entry = await ctx.db.get("entries", entryId);
-    if (!entry || entry.userId !== user._id) throw new Error("Entry not found");
+    if (!entry || entry.userId !== user._id) throw new Error("Work not found");
     await r2.deleteObject(ctx, entry.objectKey);
     await ctx.db.delete(entry._id);
   },
@@ -160,7 +160,13 @@ export const removeMine = mutation({
 export const beginUpload = mutation({
   args: {
     originalFilename: v.string(),
-    mimeType: v.union(v.literal("image/png"), v.literal("image/gif")),
+    mimeType: v.union(
+      v.literal("image/png"),
+      v.literal("image/gif"),
+      v.literal("image/jpeg"),
+      v.literal("image/webp"),
+      v.literal("image/avif"),
+    ),
     width: v.number(),
     height: v.number(),
     fileSize: v.number(),
@@ -195,7 +201,13 @@ export const beginUpload = mutation({
       status: "uploading",
       createdAt: Date.now(),
     });
-    const extension = args.mimeType === "image/gif" ? "gif" : "png";
+    const extension = {
+      "image/png": "png",
+      "image/gif": "gif",
+      "image/jpeg": "jpg",
+      "image/webp": "webp",
+      "image/avif": "avif",
+    }[args.mimeType];
     const objectKey = `users/${user._id}/entries/${entryId}/original.${extension}`;
     await ctx.db.patch(entryId, { objectKey });
     const { url } = await r2.generateUploadUrl(objectKey);

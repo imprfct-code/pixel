@@ -13,7 +13,7 @@ export function GlobalDrop({
 }) {
   const depth = useRef(0);
   const [status, setStatus] = useState<DropStatus>("idle");
-  const [message, setMessage] = useState("Drop to create entries");
+  const [message, setMessage] = useState("Drop to create works");
 
   useEffect(() => {
     const context = document.modelContext;
@@ -24,7 +24,7 @@ export function GlobalDrop({
         {
           name: "start_pixel_upload",
           title: "Open Pixel upload",
-          description: "Open the Pixel upload form without creating an entry",
+          description: "Open the Pixel upload form without creating a work",
           inputSchema: { type: "object", properties: {}, additionalProperties: false },
           annotations: { readOnlyHint: true, untrustedContentHint: false },
           execute() {
@@ -47,7 +47,7 @@ export function GlobalDrop({
     event.preventDefault();
     depth.current += 1;
     const count = event.dataTransfer.items.length;
-    setMessage(count > 1 ? `Drop ${count} files to create entries` : "Drop to create an entry");
+    setMessage(count > 1 ? `Drop ${count} files to create works` : "Drop to create a work");
     setStatus("ready");
   }
 
@@ -115,7 +115,7 @@ export function GlobalDrop({
 }
 
 function statusLabel(status: DropStatus) {
-  if (status === "ready") return "PNG or GIF · one entry per file";
+  if (status === "ready") return "PNG, GIF, JPG, WebP, or AVIF, one work per file";
   if (status === "error") return "Try another file";
   return "";
 }

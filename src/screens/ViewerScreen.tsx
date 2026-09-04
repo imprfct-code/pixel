@@ -41,7 +41,7 @@ export function ViewerScreen({
   if (!entry) {
     return (
       <section className="not-found">
-        <h1>Entry not found</h1>
+        <h1>Work not found</h1>
         <Link className="button" to="/profile">
           back to timeline
         </Link>
@@ -69,7 +69,7 @@ export function ViewerScreen({
               {copied ? <Check size={13} /> : <Share2 size={13} />}
               <span aria-live="polite">{copied ? "copied" : "share"}</span>
             </button>
-            <button type="button" onClick={() => setEditing(true)} aria-label="Edit entry">
+            <button type="button" onClick={() => setEditing(true)} aria-label="Edit work">
               <Pencil size={15} />
             </button>
           </>

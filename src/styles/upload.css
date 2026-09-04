@@ -336,6 +336,11 @@ fieldset small {
   border-color: #555;
   color: #fff;
 }
+.upload-notice-share[data-copied="true"] {
+  border-color: #4d7d5a;
+  background: #142219;
+  color: #91d3a1;
+}
 
 @media (max-width: 680px) {
   .upload-dialog {

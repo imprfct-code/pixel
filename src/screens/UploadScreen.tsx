@@ -99,11 +99,7 @@ export function UploadScreen({
   }
 
   function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
-    choose(
-      Array.from(event.clipboardData.files).filter(
-        (file) => file.type === "image/png" || file.type === "image/gif",
-      ),
-    );
+    choose(Array.from(event.clipboardData.files).filter((file) => file.type.startsWith("image/")));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -135,7 +131,7 @@ export function UploadScreen({
         setActiveIndex(0);
       }
       const reason = cause instanceof Error ? cause.message : "Upload failed";
-      setError(entryIds.length > 0 ? `${entryIds.length} saved · ${reason}` : reason);
+      setError(entryIds.length > 0 ? `${entryIds.length} saved: ${reason}` : reason);
       setSubmitted(0);
       setSubmitting(false);
     }
@@ -158,9 +154,9 @@ export function UploadScreen({
         <header className="upload-heading">
           <div>
             <p className="eyebrow">upload</p>
-            <h1 id="upload-title">New entry</h1>
+            <h1 id="upload-title">New work</h1>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close new entry">
+          <button type="button" onClick={onClose} aria-label="Close new work">
             <X size={17} />
           </button>
         </header>
@@ -200,14 +196,14 @@ export function UploadScreen({
                 >
                   <ImagePlus size={24} strokeWidth={1.5} />
                   <strong>drop / paste / choose</strong>
-                  <span>PNG or GIF · up to 10 MB each</span>
+                  <span>PNG, GIF, JPG, WebP, or AVIF, up to 10 MB each</span>
                 </button>
               )}
               <input
                 ref={inputRef}
                 className="visually-hidden"
                 type="file"
-                accept="image/png,image/gif"
+                accept="image/png,image/gif,image/jpeg,image/webp,image/avif"
                 multiple
                 onChange={(event) => {
                   if (event.target.files) choose(event.target.files);
@@ -243,7 +239,7 @@ export function UploadScreen({
           <div className="form-fields">
             {active && drafts.length > 1 && (
               <p className="draft-position">
-                entry {activeIndex + 1} / {drafts.length}
+                work {activeIndex + 1} / {drafts.length}
               </p>
             )}
             <label>
@@ -297,8 +293,8 @@ export function UploadScreen({
                 {submitting
                   ? `saving ${submitted + 1}/${drafts.length}`
                   : drafts.length > 1
-                    ? `save ${drafts.length} entries`
-                    : "save entry"}
+                    ? `save ${drafts.length} works`
+                    : "save work"}
               </button>
             </div>
           </div>

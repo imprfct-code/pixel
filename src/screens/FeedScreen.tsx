@@ -1,19 +1,15 @@
-import { ImagePlus } from "lucide-react";
+import { useUser } from "@clerk/react";
 import { useQuery } from "convex/react";
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Entry } from "../../shared/pixel";
-import { ArtworkImage } from "../components/ArtworkImage";
+import { ArtworkGrid, type ArtworkGridItem } from "../components/ArtworkGrid";
 import { GlobalDrop } from "../components/GlobalDrop";
 import { ImageLightbox } from "../components/ImageLightbox";
-
-function cardSize(width: number, height: number, index: number) {
-  const ratio = width / height;
-  if (ratio >= 1.35) return "wide";
-  if (index > 1 && index % 5 === 0) return "large";
-  return ratio <= 0.72 ? "portrait" : "standard";
-}
+import { UploadNotice } from "../components/UploadNotice";
+import { usePixelUpload } from "../hooks/usePixelUpload";
+import { UploadScreen } from "./UploadScreen";
 
 const SKELETON_CARDS = [
   { size: "wide", ratio: "2 / 1" },
@@ -47,13 +43,24 @@ function FeedSkeleton() {
 
 export function FeedScreen() {
   const navigate = useNavigate();
+  const { isSignedIn } = useUser();
   const works = useQuery(api.entries.feed);
+  const mine = useQuery(api.entries.listMine, isSignedIn ? {} : "skip");
+  const upload = usePixelUpload();
   const [openEntry, setOpenEntry] = useState<Entry>();
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
   const openUpload = useCallback(
     (files: File[] = []) => {
-      void navigate("/upload", { state: { uploadFiles: files } });
+      if (!isSignedIn) {
+        void navigate("/sign-in");
+        return;
+      }
+      setUploadFiles(files);
+      setUploadOpen(true);
     },
-    [navigate],
+    [isSignedIn, navigate],
   );
 
   return (
@@ -71,41 +78,50 @@ export function FeedScreen() {
           {works === undefined ? (
             <FeedSkeleton />
           ) : (
-            <div className="feed-board">
-              {works.map(({ entry, author }, index) => (
-                <article
-                  className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}
-                  key={entry.id}
-                >
-                  <button
-                    className="feed-card-preview"
-                    type="button"
-                    style={{ aspectRatio: `${entry.width} / ${entry.height}` }}
-                    onClick={() => setOpenEntry(entry as Entry)}
-                    aria-label={`Open ${entry.title ?? entry.originalFilename}`}
-                  >
-                    <ArtworkImage
-                      src={entry.imageUrl}
-                      alt={entry.title ?? entry.originalFilename}
-                    />
-                  </button>
-                  <Link className="feed-card-author" to={`/${author.username}`}>
-                    <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
-                    <strong>@{author.username}</strong>
-                  </Link>
-                </article>
-              ))}
-            </div>
+            <ArtworkGrid
+              works={works as ArtworkGridItem[]}
+              onOpen={(entry) => setOpenEntry(entry)}
+            />
           )}
         </main>
-        <button
-          className="feed-upload"
-          type="button"
-          onClick={() => openUpload()}
-          aria-label="Upload new entry"
-        >
-          <ImagePlus size={16} /> upload
-        </button>
+        {!uploadOpen && !uploadNotice && (
+          <button
+            className="feed-upload"
+            type="button"
+            onClick={() => openUpload()}
+            aria-label="Upload new work"
+          >
+            +
+          </button>
+        )}
+        {uploadOpen && (
+          <UploadScreen
+            initialFiles={uploadFiles}
+            onUpload={upload}
+            onClose={() => {
+              setUploadFiles([]);
+              setUploadOpen(false);
+            }}
+            onComplete={(entryIds) => {
+              setUploadFiles([]);
+              setUploadOpen(false);
+              setUploadNotice({
+                entryId: entryIds[entryIds.length - 1],
+                count: entryIds.length,
+              });
+            }}
+          />
+        )}
+        {uploadNotice && (
+          <UploadNotice
+            entry={(mine as Entry[] | undefined)?.find(
+              (entry) => entry.id === uploadNotice.entryId,
+            )}
+            entryId={uploadNotice.entryId}
+            count={uploadNotice.count}
+            onClose={() => setUploadNotice(undefined)}
+          />
+        )}
         {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
       </div>
     </GlobalDrop>

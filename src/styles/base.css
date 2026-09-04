@@ -41,6 +41,33 @@ img {
   max-width: 100%;
 }
 
+.button {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid #333;
+  background: transparent;
+  color: #b8b8b8;
+  font-size: 11px;
+}
+.button:hover {
+  border-color: #686868;
+  color: #fff;
+}
+.button.primary {
+  border-color: #e8e8e8;
+  background: #e8e8e8;
+  color: #0a0a0a;
+  font-weight: 620;
+}
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .app-shell {
   min-height: 100vh;
 }

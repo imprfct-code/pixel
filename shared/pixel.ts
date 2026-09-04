@@ -24,7 +24,7 @@ export interface Entry {
   title: string | null;
   note: string | null;
   originalFilename: string;
-  mimeType: "image/png" | "image/gif";
+  mimeType: "image/png" | "image/gif" | "image/jpeg" | "image/webp" | "image/avif";
   width: number;
   height: number;
   fileSize: number;

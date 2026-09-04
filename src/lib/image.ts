@@ -1,8 +1,14 @@
-const ACCEPTED_TYPES = new Set(["image/png", "image/gif"]);
+const ACCEPTED_TYPES = new Set([
+  "image/png",
+  "image/gif",
+  "image/jpeg",
+  "image/webp",
+  "image/avif",
+]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export function validateImageFile(file: File) {
-  if (!ACCEPTED_TYPES.has(file.type)) throw new Error("PNG or GIF only");
+  if (!ACCEPTED_TYPES.has(file.type)) throw new Error("Use PNG, GIF, JPG, WebP, or AVIF");
   if (file.size > MAX_FILE_SIZE) throw new Error("Maximum file size 10 MB");
 }
 

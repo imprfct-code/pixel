@@ -41,7 +41,7 @@ export function EntryEditor({
       });
       onClose();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not update entry");
+      setError(caught instanceof Error ? caught.message : "Could not update work");
       setSaving(false);
     }
   }
@@ -56,7 +56,7 @@ export function EntryEditor({
     try {
       await onDelete();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not delete entry");
+      setError(caught instanceof Error ? caught.message : "Could not delete work");
       setSaving(false);
       setConfirmDelete(false);
     }
@@ -78,10 +78,10 @@ export function EntryEditor({
       <form className="entry-editor" onSubmit={submit}>
         <header>
           <div>
-            <p className="eyebrow">entry</p>
+            <p className="eyebrow">work</p>
             <h2 id="entry-editor-title">Edit artwork</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close entry editor">
+          <button type="button" onClick={onClose} aria-label="Close work editor">
             <X size={17} />
           </button>
         </header>
