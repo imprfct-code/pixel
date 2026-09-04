@@ -22,18 +22,14 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/setup@v2
         with:
-          version: 11.25.0
+          runtime: node@24
+          cache: true
+          require-lockfile: true
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test --run
       - run: pnpm dlx vercel@50.38.3 pull --yes --environment=production --token="$VERCEL_TOKEN"
