@@ -128,12 +128,9 @@ export function PrivacyScreen() {
         <section>
           <h2>Contact and changes</h2>
           <p>
-            Questions or privacy requests can be submitted through the public maintainer profile at{" "}
-            <a href="https://github.com/imprfct" target="_blank" rel="noreferrer">
-              github.com/imprfct
-            </a>
-            . We may update this policy as the service changes. The date above identifies the latest
-            version.
+            Questions or privacy requests can be sent to{" "}
+            <a href="mailto:hello@imprfct.dev">hello@imprfct.dev</a>. We may update this policy as
+            the service changes. The date above identifies the latest version.
           </p>
         </section>
       </article>
@@ -226,12 +223,9 @@ export function TermsScreen() {
         <section>
           <h2>Contact and changes</h2>
           <p>
-            Questions can be submitted through{" "}
-            <a href="https://github.com/imprfct" target="_blank" rel="noreferrer">
-              github.com/imprfct
-            </a>
-            . We may update these terms as the service changes. Continued use after an update means
-            you accept the revised terms.
+            Questions can be sent to <a href="mailto:hello@imprfct.dev">hello@imprfct.dev</a>. We
+            may update these terms as the service changes. Continued use after an update means you
+            accept the revised terms.
           </p>
         </section>
       </article>

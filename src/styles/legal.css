@@ -1,29 +1,9 @@
-.feed-intro {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 360px);
-  gap: 40px;
-  align-items: end;
-  padding: 28px 0 34px;
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 12px;
-}
-.feed-intro h1 {
-  max-width: 660px;
-  margin: 0;
-  font-size: clamp(34px, 6vw, 72px);
-}
-.feed-intro > p {
-  margin: 0 0 6px;
-  color: #999;
-  font-size: 12px;
-  line-height: 1.65;
-}
 .site-footer {
   display: flex;
   width: min(1080px, calc(100% - 48px));
   min-height: 64px;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 24px;
   margin: 24px auto 0;
   border-top: 1px solid var(--line);
@@ -87,14 +67,6 @@
   text-underline-offset: 3px;
 }
 @media (max-width: 760px) {
-  .feed-intro {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 22px 0 28px;
-  }
-  .feed-intro > p {
-    max-width: 480px;
-  }
   .site-footer {
     width: min(100% - 28px, 1080px);
   }

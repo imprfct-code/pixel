@@ -73,13 +73,6 @@ export function FeedScreen() {
           <ProfileShortcut />
         </header>
         <main className="page-shell feed-page">
-          <section className="feed-intro">
-            <h1>Keep making small things.</h1>
-            <p>
-              Pixel by imprfct is a public practice log for pixel artists—publish work, follow your
-              creative rhythm, and keep every piece in one place.
-            </p>
-          </section>
           {works === undefined ? (
             <FeedSkeleton />
           ) : (
