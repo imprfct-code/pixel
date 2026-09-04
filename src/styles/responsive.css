@@ -35,19 +35,6 @@
     align-items: flex-start;
     flex-direction: column;
   }
-  .upload-page {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  .page-intro {
-    position: static;
-  }
-  .page-intro h1 {
-    max-width: 12ch;
-  }
-  .drop-zone {
-    min-height: 280px;
-  }
   .viewer-heading {
     grid-template-columns: 1fr auto;
   }

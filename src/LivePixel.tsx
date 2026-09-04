@@ -47,11 +47,16 @@ export function LivePixel() {
       visibility: input.visibility,
       milestone: input.milestone,
     });
-    const response = await fetch(uploadUrl, {
-      method: "PUT",
-      headers: { "Content-Type": input.file.type },
-      body: input.file,
-    });
+    let response: Response;
+    try {
+      response = await fetch(uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": input.file.type },
+        body: input.file,
+      });
+    } catch {
+      throw new Error("R2 upload is blocked. Check the bucket CORS policy");
+    }
     if (!response.ok) throw new Error("R2 rejected the upload");
     await finalizeUpload({ entryId });
     return entryId;

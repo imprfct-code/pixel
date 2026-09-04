@@ -1,32 +1,60 @@
-.upload-page {
-  display: grid;
-  grid-template-columns: minmax(260px, 0.65fr) 1.35fr;
-  gap: clamp(48px, 8vw, 112px);
+.upload-dialog {
+  width: min(760px, calc(100% - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #343434;
+  background: #0c0c0c;
+  color: #e8e8e8;
+  box-shadow: 0 32px 120px rgba(0, 0, 0, 0.72);
 }
-.page-intro {
+.upload-dialog::backdrop {
+  background: rgba(5, 5, 5, 0.82);
+  backdrop-filter: blur(7px);
+}
+.upload-panel {
+  max-height: calc(100vh - 34px);
+  overflow-y: auto;
+}
+.upload-heading {
   position: sticky;
-  top: 48px;
-  align-self: start;
+  z-index: 2;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  border-bottom: 1px solid #282828;
+  background: rgba(12, 12, 12, 0.96);
+  backdrop-filter: blur(8px);
 }
-.page-intro h1 {
-  max-width: 8ch;
-  margin-top: 10px;
+.upload-heading h1 {
+  margin: 5px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.055em;
 }
-.page-intro > p:last-child,
-.sign-in-gate > p {
-  max-width: 400px;
-  color: #777;
-  font-size: 11px;
-  line-height: 1.7;
+.upload-heading > button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #333;
+  background: #111;
+}
+.upload-heading > button:hover {
+  border-color: #666;
 }
 .upload-form {
   display: grid;
-  gap: 24px;
+  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1.1fr);
+  gap: 22px;
+  padding: 22px;
 }
 .drop-zone {
   position: relative;
   display: grid;
-  min-height: 340px;
+  min-height: 320px;
+  align-self: start;
   place-items: center;
   overflow: hidden;
   border: 1px dashed #373737;
@@ -42,8 +70,8 @@
   border-style: solid;
 }
 .drop-zone > img {
-  max-width: 86%;
-  max-height: 300px;
+  max-width: 88%;
+  max-height: 275px;
   object-fit: contain;
   image-rendering: pixelated;
 }
@@ -97,7 +125,7 @@
 }
 .form-fields {
   display: grid;
-  gap: 21px;
+  gap: 16px;
 }
 .form-fields label:not(.checkbox),
 fieldset {
@@ -182,7 +210,27 @@ fieldset small {
   display: flex;
   justify-content: flex-end;
   gap: 9px;
-  padding-top: 4px;
+  padding-top: 2px;
+}
+
+@media (max-width: 680px) {
+  .upload-dialog {
+    width: min(100% - 16px, 520px);
+    max-height: calc(100vh - 16px);
+  }
+  .upload-panel {
+    max-height: calc(100vh - 18px);
+  }
+  .upload-heading {
+    padding: 17px 18px;
+  }
+  .upload-form {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+  .drop-zone {
+    min-height: 240px;
+  }
 }
 
 .global-drop {

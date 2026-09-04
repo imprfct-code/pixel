@@ -54,7 +54,15 @@ export function PixelApp({
                 )
               }
             />
-            <Route path="/upload" element={<UploadRoute onUpload={onUpload} />} />
+            <Route
+              path="/upload"
+              element={
+                <>
+                  <HomeScreen user={user} entries={entries} />
+                  <UploadRoute onUpload={onUpload} />
+                </>
+              }
+            />
             <Route
               path="/settings"
               element={
@@ -82,6 +90,7 @@ function UploadRoute({ onUpload }: { onUpload: (input: UploadInput) => Promise<s
   const navigate = useNavigate();
   return (
     <UploadScreen
+      onClose={() => void navigate("/")}
       onUpload={async (input) => {
         const entryId = await onUpload(input);
         void navigate(`/entries/${entryId}`);
