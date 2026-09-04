@@ -4,6 +4,7 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
 import { LivePixel } from "./LivePixel";
+import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
 
 export function SetupScreen() {
   return (
@@ -19,6 +20,7 @@ export function SetupScreen() {
 function ConfiguredPixel() {
   return (
     <Routes>
+      <Route path="/sso-callback" element={<SSOCallbackScreen />} />
       <Route
         path="/sign-in/*"
         element={

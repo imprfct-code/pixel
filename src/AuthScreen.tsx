@@ -1,43 +1,85 @@
-import { SignIn, SignUp } from "@clerk/react";
+import { useSignIn, useSignUp } from "@clerk/react";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
 
-const appearance = {
-  variables: {
-    colorPrimary: "#e8e8e8",
-    colorBackground: "#101010",
-    colorText: "#e8e8e8",
-    colorTextSecondary: "#747474",
-    colorInputBackground: "#0a0a0a",
-    colorInputText: "#e8e8e8",
-    borderRadius: "0px",
-    fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
-  },
-};
+type Strategy = "oauth_github" | "oauth_google";
+
+function messageFrom(error: unknown) {
+  return error instanceof Error ? error.message : "Could not continue";
+}
 
 export function AuthScreen({ mode }: { mode: "sign-in" | "sign-up" }) {
+  const { signIn } = useSignIn();
+  const { signUp } = useSignUp();
+  const [active, setActive] = useState<Strategy>();
+  const [error, setError] = useState("");
+  const resource = mode === "sign-in" ? signIn : signUp;
+
+  async function continueWith(strategy: Strategy) {
+    if (!resource) return;
+    setActive(strategy);
+    setError("");
+    try {
+      const result = await resource.sso({
+        strategy,
+        redirectUrl: "/",
+        redirectCallbackUrl: "/sso-callback",
+      });
+      if (result.error) throw result.error;
+    } catch (caught) {
+      setError(messageFrom(caught));
+      setActive(undefined);
+    }
+  }
+
+  const isSignIn = mode === "sign-in";
+
   return (
     <main className="auth-page">
-      <Link className="auth-wordmark" to="/">
-        <img src="/pixel.svg" alt="" /> Pixel
-      </Link>
-      <div className="auth-panel">
-        {mode === "sign-in" ? (
-          <SignIn
-            appearance={appearance}
-            routing="path"
-            path="/sign-in"
-            signUpUrl="/sign-up"
-            fallbackRedirectUrl="/"
-          />
-        ) : (
-          <SignUp
-            appearance={appearance}
-            routing="path"
-            path="/sign-up"
-            signInUrl="/sign-in"
-            fallbackRedirectUrl="/"
-          />
-        )}
+      <div className="auth-frame">
+        <Link className="auth-wordmark" to="/">
+          <img src="/pixel.svg" alt="" /> Pixel
+        </Link>
+        <section className="auth-content">
+          <p className="eyebrow">account</p>
+          <h1>{isSignIn ? "sign in" : "create account"}</h1>
+          <div className="auth-providers">
+            <button
+              className="auth-provider primary"
+              type="button"
+              disabled={!resource || Boolean(active)}
+              onClick={() => void continueWith("oauth_github")}
+            >
+              {active === "oauth_github" ? (
+                <Loader2 className="auth-spinner" size={14} />
+              ) : (
+                <span className="provider-mark">GH</span>
+              )}
+              {active === "oauth_github" ? "connecting" : "continue with GitHub"}
+            </button>
+            <button
+              className="auth-provider"
+              type="button"
+              disabled={!resource || Boolean(active)}
+              onClick={() => void continueWith("oauth_google")}
+            >
+              {active === "oauth_google" ? (
+                <Loader2 className="auth-spinner" size={14} />
+              ) : (
+                <span className="provider-mark">G</span>
+              )}
+              {active === "oauth_google" ? "connecting" : "continue with Google"}
+            </button>
+          </div>
+          {error && <p className="auth-error">{error}</p>}
+          <p className="auth-switch">
+            {isSignIn ? "new to Pixel" : "already have an account"}
+            <Link to={isSignIn ? "/sign-up" : "/sign-in"}>
+              {isSignIn ? "create account" : "sign in"}
+            </Link>
+          </p>
+        </section>
       </div>
     </main>
   );
