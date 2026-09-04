@@ -1,4 +1,4 @@
-import { Plus, Settings } from "lucide-react";
+import { Check, Plus, Settings, Share2, X } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import type {
@@ -38,6 +38,7 @@ export function PixelApp({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
   const openUpload = useCallback(
     (files: File[] = []) => {
       setUploadFiles(files);
@@ -87,7 +88,18 @@ export function PixelApp({
                 onSaveProfile={onSaveProfile}
                 onAvatarUpload={onAvatarUpload}
               />
-              <UploadRoute initialFiles={uploadFiles} onUpload={onUpload} onClose={closeUpload} />
+              <UploadRoute
+                initialFiles={uploadFiles}
+                onUpload={onUpload}
+                onClose={closeUpload}
+                onComplete={(entryIds) => {
+                  closeUpload();
+                  setUploadNotice({
+                    entryId: entryIds[entryIds.length - 1],
+                    count: entryIds.length,
+                  });
+                }}
+              />
             </>
           )}
           {pathname === "/settings" && (
@@ -102,6 +114,14 @@ export function PixelApp({
             />
           )}
         </main>
+        {uploadNotice && (
+          <UploadNotice
+            entry={entries.find((entry) => entry.id === uploadNotice.entryId)}
+            entryId={uploadNotice.entryId}
+            count={uploadNotice.count}
+            onClose={() => setUploadNotice(undefined)}
+          />
+        )}
       </div>
     </GlobalDrop>
   );
@@ -111,21 +131,54 @@ function UploadRoute({
   initialFiles,
   onUpload,
   onClose,
+  onComplete,
 }: {
   initialFiles: File[];
   onUpload: (input: UploadInput) => Promise<string>;
   onClose: () => void;
+  onComplete: (entryIds: string[]) => void;
 }) {
-  const navigate = useNavigate();
   return (
     <UploadScreen
       initialFiles={initialFiles}
       onClose={onClose}
       onUpload={onUpload}
-      onComplete={(entryIds) => {
-        if (entryIds.length === 1) void navigate(`/entries/${entryIds[0]}`);
-        else void navigate("/profile");
-      }}
+      onComplete={onComplete}
     />
+  );
+}
+
+function UploadNotice({
+  entry,
+  entryId,
+  count,
+  onClose,
+}: {
+  entry?: Entry;
+  entryId: string;
+  count: number;
+  onClose: () => void;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(
+      new URL(`/entries/${entryId}`, window.location.origin).href,
+    );
+    setCopied(true);
+  }
+
+  return (
+    <aside className="upload-notice" role="status">
+      <div className="upload-notice-preview">{entry && <img src={entry.imageUrl} alt="" />}</div>
+      <strong>{count > 1 ? `${count} uploaded` : "uploaded"}</strong>
+      <button className="upload-notice-share" type="button" onClick={() => void copyLink()}>
+        {copied ? <Check size={13} /> : <Share2 size={13} />}
+        {copied ? "copied" : "share"}
+      </button>
+      <button className="upload-notice-close" type="button" onClick={onClose} aria-label="Close">
+        <X size={14} />
+      </button>
+    </aside>
   );
 }

@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type PointerEvent,
+  type ReactNode,
 } from "react";
 import type { Entry } from "../../shared/pixel";
 import { downloadImage } from "../lib/image";
@@ -25,7 +26,15 @@ function zoomLabel(zoom: number) {
   return `${Number(zoom.toFixed(2))}×`;
 }
 
-export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () => void }) {
+export function ImageLightbox({
+  entry,
+  onClose,
+  toolbarActions,
+}: {
+  entry: Entry;
+  onClose: () => void;
+  toolbarActions?: ReactNode;
+}) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
   const zoomAnchorRef = useRef<
@@ -183,6 +192,7 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
           {entry.width}×{entry.height}
         </span>
         <div className="lightbox-actions">
+          {toolbarActions}
           <button
             type="button"
             onClick={() => changeZoom(1 / BUTTON_ZOOM_FACTOR)}

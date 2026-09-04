@@ -13,6 +13,36 @@ function cardSize(width: number, height: number, index: number) {
   return ratio <= 0.72 ? "portrait" : "standard";
 }
 
+const SKELETON_CARDS = [
+  { size: "wide", ratio: "2 / 1" },
+  { size: "standard", ratio: "1 / 1" },
+  { size: "portrait", ratio: "3 / 4" },
+  { size: "standard", ratio: "1 / 1" },
+  { size: "large", ratio: "4 / 3" },
+  { size: "standard", ratio: "1 / 1" },
+] as const;
+
+function FeedSkeleton() {
+  return (
+    <div className="feed-board" aria-busy="true">
+      <span className="visually-hidden">loading works</span>
+      {SKELETON_CARDS.map((card, index) => (
+        <article
+          className={`feed-card feed-card-${card.size} feed-skeleton-card`}
+          key={`${card.size}-${index}`}
+          aria-hidden="true"
+        >
+          <div className="feed-skeleton-preview" style={{ aspectRatio: card.ratio }} />
+          <div className="feed-skeleton-author">
+            <span />
+            <i />
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
 export function FeedScreen() {
   const works = useQuery(api.entries.feed);
   const [openEntry, setOpenEntry] = useState<Entry>();
@@ -28,7 +58,9 @@ export function FeedScreen() {
         </Link>
       </header>
       <main className="page-shell feed-page">
-        {works && (
+        {works === undefined ? (
+          <FeedSkeleton />
+        ) : (
           <div className="feed-board">
             {works.map(({ entry, author }, index) => (
               <article
