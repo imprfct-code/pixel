@@ -79,10 +79,10 @@ export function AuthScreen({ mode }: { mode: "sign-in" | "sign-up" }) {
     <main className="auth-page">
       <div className="auth-frame">
         <Link className="auth-wordmark" to="/">
-          <img src="/pixel.svg" alt="" /> Pixel
+          <img src="/pixel.svg" alt="" /> Pixel by imprfct
         </Link>
         <section className="auth-content">
-          <h1>{isSignIn ? "Sign in to Pixel" : "Create your account"}</h1>
+          <h1>{isSignIn ? "Sign in to Pixel by imprfct" : "Create your account"}</h1>
           <div className="auth-providers">
             <button
               className="auth-provider primary"

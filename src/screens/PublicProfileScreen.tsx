@@ -15,7 +15,7 @@ export function PublicProfileScreen() {
     <div className="app-shell public-profile-shell">
       <header className="site-header">
         <Link className="wordmark" to="/" aria-label="Pixel feed">
-          <img src="/pixel.svg" alt="" /> Pixel
+          <img src="/pixel.svg" alt="" /> Pixel by imprfct
         </Link>
         <nav>
           <Link className="header-upload" to="/upload">

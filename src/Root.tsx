@@ -8,6 +8,7 @@ import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
 import { AuthLoadingSkeleton, ProfileLoadingSkeleton } from "./components/LoadingSkeleton";
 import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
+import { PrivacyScreen, TermsScreen } from "./screens/LegalScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
 import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
 import { ViewerScreen } from "./screens/ViewerScreen";
@@ -171,7 +172,7 @@ export function SetupScreen() {
   return (
     <main className="setup-page">
       <img src="/pixel.svg" alt="" />
-      <h1>Pixel</h1>
+      <h1>Pixel by imprfct</h1>
       <p>Clerk configuration required</p>
       <code>VITE_CLERK_PUBLISHABLE_KEY</code>
     </main>
@@ -184,6 +185,8 @@ function ConfiguredPixel() {
       <Route path="/sso-callback" element={<SSOCallbackScreen />} />
       <Route path="/" element={<FeedScreen />} />
       <Route path="/entries/:entryId" element={<ViewerScreen />} />
+      <Route path="/privacy" element={<PrivacyScreen />} />
+      <Route path="/terms" element={<TermsScreen />} />
       <Route
         path="/sign-in/*"
         element={

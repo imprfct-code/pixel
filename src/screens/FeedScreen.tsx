@@ -7,6 +7,7 @@ import type { Entry } from "../../shared/pixel";
 import { ArtworkGrid, type ArtworkGridItem } from "../components/ArtworkGrid";
 import { GlobalDrop } from "../components/GlobalDrop";
 import { ProfileShortcut } from "../components/ProfileShortcut";
+import { SiteFooter } from "../components/SiteFooter";
 import { UploadNotice } from "../components/UploadNotice";
 import { usePixelUpload } from "../hooks/usePixelUpload";
 import { UploadScreen } from "./UploadScreen";
@@ -67,11 +68,18 @@ export function FeedScreen() {
       <div className="app-shell feed-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel feed">
-            <img src="/pixel.svg" alt="" /> Pixel
+            <img src="/pixel.svg" alt="" /> Pixel by imprfct
           </Link>
           <ProfileShortcut />
         </header>
         <main className="page-shell feed-page">
+          <section className="feed-intro">
+            <h1>Keep making small things.</h1>
+            <p>
+              Pixel by imprfct is a public practice log for pixel artists—publish work, follow your
+              creative rhythm, and keep every piece in one place.
+            </p>
+          </section>
           {works === undefined ? (
             <FeedSkeleton />
           ) : (
@@ -92,6 +100,7 @@ export function FeedScreen() {
             />
           )}
         </main>
+        <SiteFooter />
         {!uploadOpen && !uploadNotice && (
           <button
             className="feed-upload"
