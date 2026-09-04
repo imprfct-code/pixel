@@ -18,3 +18,4 @@ r2convex.md
 .idea
 .DS_Store
 *.sw?
+.vercel
