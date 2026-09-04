@@ -237,6 +237,13 @@ h2 {
   align-items: center;
   padding-bottom: 28px;
 }
+.profile-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
 .profile-mark {
   width: 100%;
   height: 100%;
@@ -246,7 +253,7 @@ h2 {
   image-rendering: pixelated;
 }
 .profile-copy h1 {
-  margin: 0 0 7px;
+  margin: 0;
   font-size: clamp(32px, 5vw, 54px);
 }
 .profile-avatar-control {
@@ -321,7 +328,7 @@ h2 {
   opacity: 0.45;
 }
 .inline-profile-field[data-kind="handle"] {
-  margin: 0 0 7px;
+  margin: 0;
   color: #e8e8e8;
   font-size: clamp(32px, 5vw, 54px);
   font-weight: 520;
@@ -334,13 +341,13 @@ h2 {
 }
 .inline-profile-field[data-kind="bio"] {
   max-width: 52ch;
-  margin-top: 13px;
+  margin: 0;
   color: #777;
   font-size: 11px;
   line-height: 1.6;
 }
 .inline-profile-field[data-kind="website"] {
-  margin-top: 7px;
+  margin: 0;
   color: var(--rose);
   font-size: 10px;
 }
@@ -395,7 +402,7 @@ h2 {
   opacity: 0.6;
 }
 .inline-profile-form[data-kind="handle"] {
-  margin: 0 0 7px;
+  margin: 0;
   font-size: clamp(32px, 5vw, 54px);
   font-weight: 520;
   letter-spacing: -0.07em;
@@ -408,7 +415,7 @@ h2 {
 .inline-profile-form[data-kind="bio"] {
   display: flex;
   width: min(52ch, 100%);
-  margin-top: 13px;
+  margin: 0;
   color: #777;
   font-size: 11px;
   line-height: 1.6;
@@ -420,7 +427,7 @@ h2 {
   resize: none;
 }
 .inline-profile-form[data-kind="website"] {
-  margin-top: 7px;
+  margin: 0;
   color: var(--rose);
   font-size: 10px;
 }
@@ -457,14 +464,14 @@ h2 {
 }
 .profile-bio {
   max-width: 52ch;
-  margin: 13px 0 0;
+  margin: 0;
   color: #9a9a9a;
   font-size: 11px;
   line-height: 1.6;
 }
 .profile-link {
   display: inline-block;
-  margin-top: 7px;
+  margin: 0;
   color: var(--rose);
   font-size: 10px;
 }
