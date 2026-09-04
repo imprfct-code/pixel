@@ -10,6 +10,7 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     bio: v.optional(v.string()),
     website: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
     practiceStartedAt: v.number(),
   })
     .index("by_token", ["tokenIdentifier"])

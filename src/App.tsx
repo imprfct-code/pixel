@@ -1,6 +1,6 @@
 import { Plus, Settings } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
-import { Link, Route, Routes, useNavigate } from "react-router";
+import { Link, Navigate, Route, Routes, useNavigate } from "react-router";
 import type {
   Entry,
   EntryUpdateInput,
@@ -46,14 +46,14 @@ export function PixelApp({
   );
   const closeUpload = useCallback(() => {
     setUploadFiles([]);
-    void navigate("/");
+    void navigate("/profile");
   }, [navigate]);
 
   return (
     <GlobalDrop onSelectFiles={openUpload}>
       <div className="app-shell">
         <header className="site-header">
-          <Link className="wordmark" to="/" aria-label="Pixel home">
+          <Link className="wordmark" to="/profile" aria-label="Pixel home">
             <img src="/pixel.svg" alt="" /> Pixel
           </Link>
           <nav>
@@ -69,7 +69,7 @@ export function PixelApp({
         <main className="page-shell">
           <Routes>
             <Route
-              path="/"
+              path="/profile"
               element={
                 loading ? (
                   <p className="status-message">loading</p>
@@ -122,17 +122,8 @@ export function PixelApp({
                 />
               }
             />
-            <Route
-              path="*"
-              element={
-                <HomeScreen
-                  user={user}
-                  entries={entries}
-                  onSaveProfile={onSaveProfile}
-                  onAvatarUpload={onAvatarUpload}
-                />
-              }
-            />
+            <Route path="/" element={<Navigate to="/profile" replace />} />
+            <Route path="*" element={<Navigate to="/profile" replace />} />
           </Routes>
         </main>
         <footer>Pixel</footer>
@@ -158,7 +149,7 @@ function UploadRoute({
       onUpload={onUpload}
       onComplete={(entryIds) => {
         if (entryIds.length === 1) void navigate(`/entries/${entryIds[0]}`);
-        else void navigate("/");
+        else void navigate("/profile");
       }}
     />
   );

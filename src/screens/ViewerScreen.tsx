@@ -31,7 +31,7 @@ export function ViewerScreen({
     return (
       <section className="not-found">
         <h1>Entry not found</h1>
-        <Link className="button" to="/">
+        <Link className="button" to="/profile">
           back to timeline
         </Link>
       </section>
@@ -41,7 +41,7 @@ export function ViewerScreen({
   return (
     <section className="viewer-page">
       <div className="viewer-heading">
-        <Link className="back-link" to="/">
+        <Link className="back-link" to="/profile">
           <ArrowLeft size={15} /> timeline
         </Link>
         <div>
@@ -100,7 +100,7 @@ export function ViewerScreen({
           onSave={(input) => onUpdate(entry.id, input)}
           onDelete={async () => {
             await onDelete(entry.id);
-            void navigate("/");
+            void navigate("/profile");
           }}
         />
       )}

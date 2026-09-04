@@ -33,11 +33,28 @@ function dateLabel(value: string) {
     .toLowerCase();
 }
 
-export function Timeline({ entries }: { entries: Entry[] }) {
+export function Timeline({
+  entries,
+  linkEntries = true,
+}: {
+  entries: Entry[];
+  linkEntries?: boolean;
+}) {
   const [openEntry, setOpenEntry] = useState<Entry>();
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
 
   if (entries.length === 0) {
+    if (!linkEntries) {
+      return (
+        <section className="empty-timeline">
+          <div className="section-heading">
+            <h2>timeline</h2>
+            <span>0 entries</span>
+          </div>
+          <p className="public-empty-copy">No public entries yet</p>
+        </section>
+      );
+    }
     return (
       <>
         <section className="empty-timeline">
@@ -105,9 +122,13 @@ export function Timeline({ entries }: { entries: Entry[] }) {
             </button>
             <div className="timeline-entry-copy">
               <div className="timeline-entry-title">
-                <Link to={`/entries/${entry.id}`}>
+                {linkEntries ? (
+                  <Link to={`/entries/${entry.id}`}>
+                    <strong>{entry.title ?? entry.originalFilename}</strong>
+                  </Link>
+                ) : (
                   <strong>{entry.title ?? entry.originalFilename}</strong>
-                </Link>
+                )}
                 <time dateTime={entry.createdAt}>{dateLabel(entry.createdAt)}</time>
               </div>
               {entry.note && <p>{entry.note}</p>}

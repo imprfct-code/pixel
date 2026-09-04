@@ -12,13 +12,14 @@
     font-size: 0;
   }
   .profile-block {
-    grid-template-columns: 44px 1fr;
+    grid-template-columns: 88px 1fr;
     align-items: start;
   }
   .profile-mark,
-  .profile-avatar-control {
-    width: 44px;
-    height: 44px;
+  .profile-avatar-control,
+  .profile-avatar-viewer {
+    width: 88px;
+    height: 88px;
   }
   .stats {
     grid-column: 1 / -1;

@@ -1,6 +1,7 @@
 import { Camera } from "lucide-react";
 import { useState } from "react";
 import type { Entry, ProfileInput, UserSummary } from "../../shared/pixel";
+import { AvatarLightbox } from "../components/AvatarLightbox";
 import { Heatmap } from "../components/Heatmap";
 import { InlineProfileField } from "../components/InlineProfileField";
 import { Timeline } from "../components/Timeline";
@@ -12,16 +13,19 @@ function practiceDays(entries: Entry[]) {
 export function HomeScreen({
   user,
   entries,
+  editable = true,
   onSaveProfile,
   onAvatarUpload,
 }: {
   user: UserSummary;
   entries: Entry[];
-  onSaveProfile: (input: ProfileInput) => Promise<void>;
-  onAvatarUpload: (file: File) => Promise<void>;
+  editable?: boolean;
+  onSaveProfile?: (input: ProfileInput) => Promise<void>;
+  onAvatarUpload?: (file: File) => Promise<void>;
 }) {
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState("");
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const since = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
     .format(new Date(user.practiceStartedAt))
     .toLowerCase();
@@ -33,11 +37,12 @@ export function HomeScreen({
   };
 
   function saveField(field: keyof ProfileInput, value: string) {
+    if (!onSaveProfile) return Promise.reject(new Error("Profile is read only"));
     return onSaveProfile({ ...profile, [field]: value });
   }
 
   async function uploadAvatar(file?: File) {
-    if (!file) return;
+    if (!file || !onAvatarUpload) return;
     setAvatarSaving(true);
     setAvatarError("");
     try {
@@ -52,47 +57,77 @@ export function HomeScreen({
   return (
     <>
       <section className="profile-block">
-        <label className="profile-avatar-control" data-saving={avatarSaving || undefined}>
-          <img
-            className="profile-mark"
-            src={user.avatarUrl ?? "/avatar.png"}
-            alt="Profile avatar"
-          />
-          <span>
-            <Camera size={13} /> {avatarSaving ? "uploading" : "change"}
-          </span>
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/gif"
-            disabled={avatarSaving}
-            onChange={(event) => void uploadAvatar(event.target.files?.[0])}
-          />
-        </label>
+        {editable ? (
+          <label className="profile-avatar-control" data-saving={avatarSaving || undefined}>
+            <img
+              className="profile-mark"
+              src={user.avatarUrl ?? "/avatar.png"}
+              alt="Profile avatar"
+            />
+            <span>
+              <Camera size={15} /> {avatarSaving ? "uploading" : "change"}
+            </span>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              disabled={avatarSaving}
+              onChange={(event) => void uploadAvatar(event.target.files?.[0])}
+            />
+          </label>
+        ) : (
+          <button
+            className="profile-avatar-viewer"
+            type="button"
+            onClick={() => setAvatarOpen(true)}
+            aria-label={`Open ${user.username} avatar`}
+          >
+            <img
+              className="profile-mark"
+              src={user.avatarUrl ?? "/avatar.png"}
+              alt="Profile avatar"
+            />
+          </button>
+        )}
         <div className="profile-copy">
-          <InlineProfileField
-            kind="handle"
-            value={profile.username}
-            emptyLabel="handle"
-            onSave={(value) => saveField("username", value)}
-          />
-          <InlineProfileField
-            kind="displayName"
-            value={profile.displayName}
-            emptyLabel="add display name"
-            onSave={(value) => saveField("displayName", value)}
-          />
-          <InlineProfileField
-            kind="bio"
-            value={profile.bio}
-            emptyLabel="add bio"
-            onSave={(value) => saveField("bio", value)}
-          />
-          <InlineProfileField
-            kind="website"
-            value={profile.website}
-            emptyLabel="add website"
-            onSave={(value) => saveField("website", value)}
-          />
+          {editable ? (
+            <>
+              <InlineProfileField
+                kind="handle"
+                value={profile.username}
+                emptyLabel="handle"
+                onSave={(value) => saveField("username", value)}
+              />
+              <InlineProfileField
+                kind="displayName"
+                value={profile.displayName}
+                emptyLabel="add display name"
+                onSave={(value) => saveField("displayName", value)}
+              />
+              <InlineProfileField
+                kind="bio"
+                value={profile.bio}
+                emptyLabel="add bio"
+                onSave={(value) => saveField("bio", value)}
+              />
+              <InlineProfileField
+                kind="website"
+                value={profile.website}
+                emptyLabel="add website"
+                onSave={(value) => saveField("website", value)}
+              />
+            </>
+          ) : (
+            <>
+              <h1>@{profile.username}</h1>
+              {profile.displayName && <p className="profile-note">{profile.displayName}</p>}
+              {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+              {profile.website && (
+                <a className="profile-link" href={profile.website} target="_blank" rel="noreferrer">
+                  {profile.website.replace(/^https?:\/\//, "")}
+                </a>
+              )}
+            </>
+          )}
           {avatarError && <p className="profile-inline-error">{avatarError}</p>}
         </div>
         <dl className="stats">
@@ -111,7 +146,14 @@ export function HomeScreen({
         </dl>
       </section>
       <Heatmap entries={entries} />
-      <Timeline entries={entries} />
+      <Timeline entries={entries} linkEntries={editable} />
+      {avatarOpen && (
+        <AvatarLightbox
+          src={user.avatarUrl ?? "/avatar.png"}
+          name={user.username}
+          onClose={() => setAvatarOpen(false)}
+        />
+      )}
     </>
   );
 }

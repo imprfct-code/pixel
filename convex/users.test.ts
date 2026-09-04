@@ -71,4 +71,27 @@ describe("users", () => {
       "Username already taken",
     );
   });
+
+  it("serves a public profile without exposing private entries", async () => {
+    const base = convexTest(schema, modules);
+    const owner = base.withIdentity({
+      issuer: "https://clerk.pixel.test",
+      subject: "user_public",
+      tokenIdentifier: "https://clerk.pixel.test|user_public",
+    });
+
+    await owner.mutation(api.users.getOrCreate, {
+      username: "public-artist",
+      displayName: "Public Artist",
+      avatarUrl: "https://images.pixel.test/avatar.png",
+    });
+    const profile = await base.query(api.entries.publicProfile, { username: "PUBLIC-ARTIST" });
+
+    expect(profile?.user).toMatchObject({
+      username: "public-artist",
+      displayName: "Public Artist",
+      avatarUrl: "https://images.pixel.test/avatar.png",
+    });
+    expect(profile?.entries).toEqual([]);
+  });
 });

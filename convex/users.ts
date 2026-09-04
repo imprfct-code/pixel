@@ -24,6 +24,7 @@ export const getOrCreate = mutation({
   args: {
     username: v.string(),
     displayName: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -41,6 +42,7 @@ export const getOrCreate = mutation({
       await ctx.db.patch(existing._id, {
         username: owner && owner._id !== existing._id ? existing.username : username,
         displayName,
+        avatarUrl: args.avatarUrl,
       });
       return existing._id;
     }
@@ -53,8 +55,24 @@ export const getOrCreate = mutation({
       tokenIdentifier: identity.tokenIdentifier,
       username: availableUsername,
       displayName,
+      avatarUrl: args.avatarUrl,
       practiceStartedAt: Date.now(),
     });
+  },
+});
+
+export const updateAvatar = mutation({
+  args: { avatarUrl: v.string() },
+  handler: async (ctx, { avatarUrl }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+    if (!user) throw new Error("Profile not found");
+    if (!/^https:\/\//i.test(avatarUrl)) throw new Error("Invalid avatar URL");
+    await ctx.db.patch(user._id, { avatarUrl: avatarUrl.slice(0, 1000) });
   },
 });
 

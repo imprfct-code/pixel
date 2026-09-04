@@ -4,7 +4,10 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
 import { LivePixel } from "./LivePixel";
+import { PublicProfileScreen } from "./screens/PublicProfileScreen";
 import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
+
+const PROTECTED_PATHS = ["/", "/profile", "/upload", "/settings", "/entries/:entryId"];
 
 export function SetupScreen() {
   return (
@@ -29,7 +32,7 @@ function ConfiguredPixel() {
               <p className="status-message full-page">loading</p>
             </ClerkLoading>
             <ClerkLoaded>
-              <Show when="signed-out" fallback={<Navigate to="/" replace />}>
+              <Show when="signed-out" fallback={<Navigate to="/profile" replace />}>
                 <AuthScreen mode="sign-in" />
               </Show>
             </ClerkLoaded>
@@ -40,36 +43,41 @@ function ConfiguredPixel() {
         path="/sign-up/*"
         element={
           <ClerkLoaded>
-            <Show when="signed-out" fallback={<Navigate to="/" replace />}>
+            <Show when="signed-out" fallback={<Navigate to="/profile" replace />}>
               <AuthScreen mode="sign-up" />
             </Show>
           </ClerkLoaded>
         }
       />
-      <Route
-        path="*"
-        element={
-          <>
-            <ClerkLoading>
-              <p className="status-message full-page">loading</p>
-            </ClerkLoading>
-            <ClerkLoaded>
-              <Show when="signed-in" fallback={<Navigate to="/sign-in" replace />}>
-                <AuthLoading>
-                  <p className="status-message full-page">signing in</p>
-                </AuthLoading>
-                <Unauthenticated>
-                  <Navigate to="/sign-in" replace />
-                </Unauthenticated>
-                <Authenticated>
-                  <LivePixel />
-                </Authenticated>
-              </Show>
-            </ClerkLoaded>
-          </>
-        }
-      />
+      {PROTECTED_PATHS.map((path) => (
+        <Route key={path} path={path} element={<ProtectedPixel />} />
+      ))}
+      <Route path="/:handle" element={<PublicProfileScreen />} />
+      <Route path="*" element={<Navigate to="/profile" replace />} />
     </Routes>
+  );
+}
+
+function ProtectedPixel() {
+  return (
+    <>
+      <ClerkLoading>
+        <p className="status-message full-page">loading</p>
+      </ClerkLoading>
+      <ClerkLoaded>
+        <Show when="signed-in" fallback={<Navigate to="/sign-in" replace />}>
+          <AuthLoading>
+            <p className="status-message full-page">signing in</p>
+          </AuthLoading>
+          <Unauthenticated>
+            <Navigate to="/sign-in" replace />
+          </Unauthenticated>
+          <Authenticated>
+            <LivePixel />
+          </Authenticated>
+        </Show>
+      </ClerkLoaded>
+    </>
   );
 }
 

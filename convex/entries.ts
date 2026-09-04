@@ -59,6 +59,43 @@ export const getMine = query({
   },
 });
 
+export const publicProfile = query({
+  args: { username: v.string() },
+  handler: async (ctx, { username }) => {
+    const normalized = username
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "")
+      .slice(0, 32);
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", normalized))
+      .unique();
+    if (!user) return null;
+    const entries = await ctx.db
+      .query("entries")
+      .withIndex("by_user_created", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .collect();
+
+    return {
+      user: {
+        id: user._id,
+        username: user.username,
+        displayName: user.displayName ?? null,
+        bio: user.bio ?? null,
+        website: user.website ?? null,
+        avatarUrl: user.avatarUrl,
+        practiceStartedAt: new Date(user.practiceStartedAt).toISOString(),
+      },
+      entries: await Promise.all(
+        entries
+          .filter((entry) => entry.status === "ready" && entry.visibility === "public")
+          .map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
+      ),
+    };
+  },
+});
+
 export const updateMine = mutation({
   args: {
     entryId: v.id("entries"),

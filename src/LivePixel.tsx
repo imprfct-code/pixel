@@ -17,6 +17,7 @@ export function LivePixel() {
   const currentUser = useQuery(api.users.current);
   const ensureUser = useMutation(api.users.getOrCreate);
   const saveProfile = useMutation(api.users.updateProfile);
+  const saveAvatar = useMutation(api.users.updateAvatar);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const beginUpload = useMutation(api.entries.beginUpload);
   const finalizeUpload = useAction(api.entries.finalizeUpload);
@@ -29,8 +30,14 @@ export function LivePixel() {
     void ensureUser({
       username: clerkUser.username ?? emailName ?? `artist-${clerkUser.id.slice(-6)}`,
       displayName: clerkUser.fullName ?? undefined,
+      avatarUrl: clerkUser.imageUrl,
     });
   }, [clerkUser, currentUser, ensureUser]);
+
+  useEffect(() => {
+    if (!clerkUser || !currentUser || currentUser.avatarUrl === clerkUser.imageUrl) return;
+    void saveAvatar({ avatarUrl: clerkUser.imageUrl });
+  }, [clerkUser, currentUser, saveAvatar]);
 
   if (!currentUser) return <p className="status-message full-page">loading</p>;
 
@@ -41,7 +48,7 @@ export function LivePixel() {
     bio: currentUser.bio ?? null,
     website: currentUser.website ?? null,
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
-    avatarUrl: clerkUser?.imageUrl ?? "/avatar.png",
+    avatarUrl: currentUser.avatarUrl ?? clerkUser?.imageUrl ?? "/avatar.png",
   };
 
   async function upload(input: UploadInput) {
@@ -79,6 +86,7 @@ export function LivePixel() {
     if (!clerkUser) throw new Error("User not loaded");
     await clerkUser.setProfileImage({ file });
     await clerkUser.reload();
+    await saveAvatar({ avatarUrl: clerkUser.imageUrl });
   }
 
   async function updateEntry(entryId: string, input: EntryUpdateInput) {

@@ -44,7 +44,7 @@ export function SettingsScreen({
 
   return (
     <section className="settings-page">
-      <Link className="back-link" to="/">
+      <Link className="back-link" to="/profile">
         <ChevronLeft size={13} /> profile
       </Link>
       <div className="settings-heading">
