@@ -7,8 +7,16 @@ const ACCEPTED_TYPES = new Set([
 ]);
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+export const ARTWORK_ACCEPT = ".ase,.aseprite,image/png,image/gif,image/jpeg,image/webp,image/avif";
+
+export function isAseprite(file: File) {
+  return /\.(ase|aseprite)$/i.test(file.name);
+}
+
 export function validateImageFile(file: File) {
-  if (!ACCEPTED_TYPES.has(file.type)) throw new Error("Use PNG, GIF, JPG, WebP, or AVIF");
+  if (!ACCEPTED_TYPES.has(file.type) && !isAseprite(file))
+    throw new Error("Use Aseprite, PNG, GIF, JPG, WebP, or AVIF");
+  if (!file.size) throw new Error("This file is empty");
   if (file.size > MAX_FILE_SIZE) throw new Error("Maximum file size 10 MB");
 }
 
@@ -35,6 +43,8 @@ export async function downloadImage(url: string, filename: string) {
   const anchor = document.createElement("a");
   anchor.href = objectUrl;
   anchor.download = filename;
+  document.body.append(anchor);
   anchor.click();
-  URL.revokeObjectURL(objectUrl);
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
 }

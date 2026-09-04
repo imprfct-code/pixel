@@ -121,7 +121,7 @@ export function GlobalDrop({
 }
 
 function statusLabel(status: DropStatus) {
-  if (status === "ready") return "PNG, GIF, JPG, WebP, or AVIF";
+  if (status === "ready") return "Aseprite, PNG, GIF, JPG, WebP, or AVIF";
   if (status === "error") return "Try another file";
   return "";
 }

@@ -10,6 +10,7 @@
 
 import type * as auth from "../auth.js";
 import type * as entries from "../entries.js";
+import type * as entryAssets from "../entryAssets.js";
 import type * as r2 from "../r2.js";
 import type * as users from "../users.js";
 
@@ -18,6 +19,7 @@ import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   entries: typeof entries;
+  entryAssets: typeof entryAssets;
   r2: typeof r2;
   users: typeof users;
 }>;

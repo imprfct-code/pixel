@@ -15,6 +15,7 @@ export function ArtworkImage({
 }) {
   return (
     <img
+      data-artwork
       src={src}
       alt={alt}
       className={className}

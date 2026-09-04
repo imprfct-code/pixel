@@ -32,10 +32,15 @@ export interface Entry {
   createdAt: string;
   practiceDate?: string;
   imageUrl: string;
+  sourceFilename?: string;
+  sourceUrl?: string;
+  animation?: { url: string; columns: number; frameDurations: number[] };
 }
 
 export interface UploadInput {
   file: File;
+  source?: File;
+  animation?: { file: Blob; columns: number; frameDurations: number[] };
   title?: string;
   note?: string;
   visibility: Visibility;
