@@ -1,8 +1,18 @@
-import { ArrowDown, ArrowUp, Search } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Download,
+  ExternalLink,
+  MoreHorizontal,
+  Search,
+  Share2,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
 import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
+import { downloadImage } from "../lib/image";
 import { ArtworkImage } from "./ArtworkImage";
 
 export type ArtworkGridItem = {
@@ -26,6 +36,25 @@ function ArtworkCard({
   index: number;
   onOpen: (entry: Entry) => void;
 }) {
+  const [copied, setCopied] = useState(false);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(
+    () => () => {
+      if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    },
+    [],
+  );
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(
+      new URL(`/entries/${entry.id}`, window.location.origin).href,
+    );
+    setCopied(true);
+    if (copiedTimer.current) clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(false), 1800);
+  }
+
   return (
     <article className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}>
       <button
@@ -37,6 +66,35 @@ function ArtworkCard({
       >
         <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
       </button>
+      <div className="feed-card-actions">
+        {entry.visibility !== "private" && (
+          <button
+            type="button"
+            data-copied={copied || undefined}
+            onClick={() => void copyLink()}
+            aria-label={copied ? "Link copied" : "Copy share link"}
+            title={copied ? "Copied" : "Share"}
+          >
+            {copied ? <Check size={13} /> : <Share2 size={13} />}
+          </button>
+        )}
+        <details className="feed-card-more">
+          <summary aria-label="More actions" title="More actions">
+            <MoreHorizontal size={15} />
+          </summary>
+          <div>
+            <button type="button" onClick={() => onOpen(entry)}>
+              <ExternalLink size={12} /> open
+            </button>
+            <button
+              type="button"
+              onClick={() => void downloadImage(entry.imageUrl, entry.originalFilename)}
+            >
+              <Download size={12} /> download
+            </button>
+          </div>
+        </details>
+      </div>
       <Link className="feed-card-author" to={`/${author.username}`}>
         <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
         <strong>@{author.username}</strong>

@@ -28,6 +28,41 @@
     padding-top: 18px;
     border-top: 1px solid var(--line);
   }
+  .heatmap-heading {
+    gap: 10px;
+  }
+  .heatmap-legend {
+    display: none;
+  }
+  .heatmap-mobile-state {
+    display: inline;
+    margin-left: auto;
+    color: #666;
+    font-size: 9px;
+    text-transform: uppercase;
+  }
+  .heatmap-lens {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 10px;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .heatmap-lens::-webkit-scrollbar {
+    display: none;
+  }
+  .heatmap-grid {
+    width: max-content;
+    min-width: 100%;
+    justify-content: flex-start;
+    gap: 3px;
+  }
+  .heatmap-week {
+    width: 20px;
+    flex: 0 0 20px;
+    gap: 3px;
+  }
   .empty-copy {
     align-items: flex-start;
     flex-direction: column;

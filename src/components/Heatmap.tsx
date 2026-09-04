@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react";
 import type { Entry } from "../../shared/pixel";
-import { calendarDateKey } from "../lib/calendar";
+import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
 
 export function Heatmap({
   entries,
@@ -13,12 +13,42 @@ export function Heatmap({
 }) {
   const { weeks, total, activeDays, year } = useMemo(() => buildYear(entries), [entries]);
   const { showCell, resetCells, moveToCell } = useHeatmapLens();
+  const lensRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const lens = lensRef.current;
+    if (!lens) return;
+
+    let frame = 0;
+    const alignToday = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!window.matchMedia("(max-width: 760px)").matches) return;
+        const today = lens.querySelector<HTMLElement>(
+          `[data-date="${calendarDateKey(new Date())}"]`,
+        );
+        const week = today?.parentElement;
+        if (!week) return;
+        lens.scrollLeft = Math.max(0, week.offsetLeft - lens.clientWidth + week.offsetWidth + 14);
+      });
+    };
+
+    alignToday();
+    window.addEventListener("resize", alignToday);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", alignToday);
+    };
+  }, [year]);
 
   return (
     <section className="heatmap-section" aria-labelledby="practice-heading">
       <div className="heatmap-heading">
         <span id="practice-heading">
           {total} pieces / {activeDays} days / {year}
+        </span>
+        <span className="heatmap-mobile-state">
+          {selectedDate ? calendarDateLabel(selectedDate) : "swipe ↔"}
         </span>
         <div className="heatmap-legend" aria-label="Activity intensity">
           <span>less</span>
@@ -29,6 +59,7 @@ export function Heatmap({
         </div>
       </div>
       <div
+        ref={lensRef}
         className="heatmap-lens"
         onMouseMove={(event) => moveToCell(event)}
         onMouseLeave={(event) => resetCells(event.currentTarget)}
@@ -56,6 +87,7 @@ export function Heatmap({
                       className="heatmap-cell"
                       data-heatmap={`${weekIndex},${dayIndex}`}
                       data-level={cell.level}
+                      data-date={cell.date}
                       data-label={label}
                       data-selected={selectedDate === cell.date || undefined}
                       aria-label={`${label}. Filter works by this day`}
@@ -72,6 +104,7 @@ export function Heatmap({
                     key={key}
                     className="heatmap-cell"
                     data-level={cell?.level ?? 0}
+                    data-date={cell?.date}
                     data-padding={!cell || undefined}
                     data-future={cell?.future || undefined}
                   />
@@ -122,7 +155,7 @@ function useHeatmapLens() {
 
   const showCell = useCallback((target: EventTarget | null) => {
     if (!(target instanceof Element)) return;
-    const active = target.closest<HTMLSpanElement>("[data-heatmap]");
+    const active = target.closest<HTMLElement>("[data-heatmap]");
     const grid = active?.closest<HTMLElement>(".heatmap-lens");
     const tooltip = grid?.querySelector<HTMLElement>(".heatmap-tooltip");
     if (!active || !grid || !tooltip) return;
@@ -138,7 +171,7 @@ function useHeatmapLens() {
     const gridBox = grid.getBoundingClientRect();
     const cellBox = active.getBoundingClientRect();
     tooltip.textContent = active.dataset.label ?? "";
-    tooltip.style.left = `${cellBox.left - gridBox.left + cellBox.width / 2}px`;
+    tooltip.style.left = `${cellBox.left - gridBox.left + grid.scrollLeft + cellBox.width / 2}px`;
     tooltip.style.top = `${cellBox.top - gridBox.top - 8}px`;
     tooltip.dataset.visible = "true";
   }, []);

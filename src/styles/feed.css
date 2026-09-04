@@ -99,6 +99,7 @@
   gap: 10px;
 }
 .feed-card {
+  position: relative;
   grid-column: span 1;
   min-width: 0;
   width: 100%;
@@ -164,6 +165,89 @@
 .feed-card-preview:hover img {
   transform: scale(1.025);
 }
+.feed-card-actions {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-3px);
+  transition:
+    opacity 100ms ease,
+    transform 100ms ease;
+}
+.feed-card:hover .feed-card-actions,
+.feed-card:focus-within .feed-card-actions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
+}
+.feed-card-actions > button,
+.feed-card-more > summary {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid #393939;
+  background: rgba(10, 10, 10, 0.9);
+  color: #bbb;
+  list-style: none;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.feed-card-more > summary::-webkit-details-marker {
+  display: none;
+}
+.feed-card-actions > button:hover,
+.feed-card-actions > button:focus-visible,
+.feed-card-more > summary:hover,
+.feed-card-more > summary:focus-visible,
+.feed-card-more[open] > summary {
+  border-color: #666;
+  color: #fff;
+  outline: 0;
+}
+.feed-card-actions > button[data-copied="true"] {
+  color: var(--rose);
+}
+.feed-card-more {
+  position: relative;
+}
+.feed-card-more > div {
+  position: absolute;
+  top: 35px;
+  right: 0;
+  display: grid;
+  min-width: 112px;
+  border: 1px solid #393939;
+  background: #0d0d0d;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+.feed-card-more > div button {
+  display: flex;
+  height: 31px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 0;
+  background: transparent;
+  color: #aaa;
+  font-size: 9px;
+  text-align: left;
+}
+.feed-card-more > div button + button {
+  border-top: 1px solid var(--line);
+}
+.feed-card-more > div button:hover,
+.feed-card-more > div button:focus-visible {
+  background: #171717;
+  color: #eee;
+  outline: 0;
+}
 .feed-card-author {
   display: flex;
   align-items: center;
@@ -215,6 +299,19 @@
 }
 .feed-skeleton-card {
   border-color: #1d1d1d;
+}
+@media (hover: none) {
+  .feed-card-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feed-card-actions,
+  .feed-card-preview img {
+    transition: none;
+  }
 }
 .feed-skeleton-preview {
   min-height: 96px;
