@@ -36,6 +36,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test --run
-      - run: pnpm dlx vercel@50.38.3 pull --yes --environment=production
-      - run: pnpm dlx vercel@50.38.3 build --prod
-      - run: pnpm dlx vercel@50.38.3 deploy --prebuilt --prod
+      - run: pnpm dlx vercel@50.38.3 pull --yes --environment=production --token="$VERCEL_TOKEN"
+      - run: pnpm dlx vercel@50.38.3 build --prod --token="$VERCEL_TOKEN"
+      - run: pnpm dlx vercel@50.38.3 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
