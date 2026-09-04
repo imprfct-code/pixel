@@ -17,16 +17,17 @@ const CLERK_APPEARANCE = {
     colorNeutral: "#e8e8e8",
     colorForeground: "#e8e8e8",
     colorMuted: "#171717",
-    colorMutedForeground: "#747474",
+    colorMutedForeground: "#a0a0a0",
     colorBackground: "#0d0d0d",
     colorInput: "#111111",
     colorInputForeground: "#e8e8e8",
-    colorBorder: "#2f2f2f",
+    colorBorder: "#3a3a3a",
     colorRing: "#c7787a",
     colorShadow: "#000000",
     colorModalBackdrop: "#050505",
     fontFamily: '"Geist Mono Variable", ui-monospace, monospace',
     fontFamilyButtons: '"Geist Mono Variable", ui-monospace, monospace',
+    spacing: "0.75rem",
     borderRadius: "0px",
   },
   elements: {
@@ -44,34 +45,95 @@ const CLERK_APPEARANCE = {
       borderRadius: "0px",
     },
     userButtonPopoverCard: {
+      width: "292px",
+      maxWidth: "calc(100vw - 24px)",
       border: "1px solid #343434",
       borderRadius: "0px",
       backgroundColor: "#0d0d0d",
       boxShadow: "0 22px 64px rgba(0, 0, 0, 0.68)",
     },
+    userButtonPopoverMain: {
+      padding: "10px",
+    },
+    userPreview: {
+      gap: "10px",
+      padding: "0",
+    },
+    userPreviewSecondaryIdentifier: {
+      color: "#a0a0a0",
+    },
+    userButtonPopoverActions: {
+      padding: "0",
+    },
     userButtonPopoverActionButton: {
+      minHeight: "38px",
+      gap: "10px",
+      padding: "8px 10px",
       borderTop: "1px solid #242424",
       borderRadius: "0px",
+      color: "#d2d2d2",
+    },
+    userButtonPopoverActionButtonIcon: {
+      color: "#b8b8b8",
     },
     userButtonPopoverFooter: {
+      padding: "8px 10px",
       borderTop: "1px solid #242424",
       backgroundColor: "#0d0d0d",
     },
     modalContent: {
+      width: "min(860px, calc(100vw - 32px))",
+      height: "min(620px, calc(100vh - 32px))",
+      maxWidth: "860px",
+      maxHeight: "620px",
       border: "1px solid #343434",
       borderRadius: "0px",
       backgroundColor: "#0d0d0d",
       boxShadow: "0 32px 120px rgba(0, 0, 0, 0.72)",
     },
     navbar: {
+      width: "210px",
+      flexBasis: "210px",
+      padding: "18px 12px",
       borderRight: "1px solid #242424",
       backgroundColor: "#0a0a0a",
     },
+    navbarButtons: {
+      gap: "4px",
+    },
     navbarButton: {
+      minHeight: "36px",
+      padding: "8px 10px",
       borderRadius: "0px",
+      color: "#bdbdbd",
+    },
+    pageScrollBox: {
+      padding: "18px 22px",
+    },
+    profilePage: {
+      gap: "14px",
+    },
+    profilePageContent: {
+      padding: "0",
     },
     profileSection: {
+      padding: "14px 0",
       borderColor: "#242424",
+    },
+    profileSectionHeader: {
+      marginBottom: "8px",
+    },
+    profileSectionItem: {
+      padding: "6px 0",
+    },
+    activeDeviceListItem: {
+      gap: "10px",
+      padding: "6px 0",
+    },
+    badge: {
+      border: "1px solid #3a3a3a",
+      backgroundColor: "#242424",
+      color: "#d0d0d0",
     },
     profileSectionPrimaryButton: {
       borderRadius: "0px",

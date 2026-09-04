@@ -161,7 +161,11 @@ h2 {
   display: block;
   width: 100%;
   aspect-ratio: 1;
+  align-self: center;
+  padding: 0;
   overflow: hidden;
+  border: 0;
+  background: transparent;
   cursor: pointer;
 }
 .profile-avatar-viewer {
@@ -188,16 +192,12 @@ h2 {
   transition: opacity 100ms ease;
 }
 .profile-avatar-control:hover > span,
-.profile-avatar-control:focus-within > span,
+.profile-avatar-control:focus-visible > span,
 .profile-avatar-control[data-saving="true"] > span {
   opacity: 1;
 }
-.profile-avatar-control > input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
+.profile-avatar-input {
+  display: none;
 }
 .inline-profile-field {
   display: flex;

@@ -1,5 +1,5 @@
 import { Camera } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Entry, ProfileInput, UserSummary } from "../../shared/pixel";
 import { AvatarLightbox } from "../components/AvatarLightbox";
 import { Heatmap } from "../components/Heatmap";
@@ -26,6 +26,7 @@ export function HomeScreen({
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const since = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
     .format(new Date(user.practiceStartedAt))
     .toLowerCase();
@@ -58,31 +59,41 @@ export function HomeScreen({
     <>
       <section className="profile-block">
         {editable ? (
-          <label className="profile-avatar-control" data-saving={avatarSaving || undefined}>
-            <img
-              className="profile-mark"
-              src={user.avatarUrl ?? "/avatar.png"}
-              alt="Profile avatar"
-            />
-            <span>
-              <Camera size={15} /> {avatarSaving ? "uploading" : "change"}
-            </span>
+          <>
+            <button
+              className="profile-avatar-control"
+              type="button"
+              data-saving={avatarSaving || undefined}
+              disabled={avatarSaving}
+              onClick={() => {
+                const input = avatarInputRef.current;
+                if (!input) return;
+                input.value = "";
+                input.click();
+              }}
+            >
+              <img
+                className="profile-mark"
+                src={user.avatarUrl ?? "/avatar.png"}
+                alt="Profile avatar"
+              />
+              <span>
+                <Camera size={15} /> {avatarSaving ? "uploading" : "change"}
+              </span>
+            </button>
             <input
+              ref={avatarInputRef}
+              className="profile-avatar-input"
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               disabled={avatarSaving}
-              onClick={(event) => {
-                const input = event.currentTarget;
-                window.addEventListener("focus", () => input.blur(), { once: true });
-              }}
               onChange={(event) => {
                 const file = event.currentTarget.files?.[0];
                 event.currentTarget.value = "";
-                event.currentTarget.blur();
                 void uploadAvatar(file);
               }}
             />
-          </label>
+          </>
         ) : (
           <button
             className="profile-avatar-viewer"
