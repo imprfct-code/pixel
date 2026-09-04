@@ -172,7 +172,7 @@ export function SetupScreen() {
   return (
     <main className="setup-page">
       <img src="/pixel.svg" alt="" />
-      <h1>Pixel by imprfct</h1>
+      <h1>Pixel</h1>
       <p>Clerk configuration required</p>
       <code>VITE_CLERK_PUBLISHABLE_KEY</code>
     </main>

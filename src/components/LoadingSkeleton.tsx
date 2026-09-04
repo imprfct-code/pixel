@@ -39,7 +39,7 @@ export function ProfileLoadingSkeleton({ withShell = false }: { withShell?: bool
     <div className="app-shell">
       <header className="site-header loading-header" aria-hidden="true">
         <span className="wordmark">
-          <img src="/pixel.svg" alt="" /> Pixel by imprfct
+          <img src="/pixel.svg" alt="" /> Pixel
         </span>
         <span className="skeleton-block loading-header-avatar" />
       </header>
@@ -73,7 +73,7 @@ export function AuthLoadingSkeleton() {
       <span className="visually-hidden">Signing in</span>
       <section aria-hidden="true">
         <span className="wordmark">
-          <img src="/pixel.svg" alt="" /> Pixel by imprfct
+          <img src="/pixel.svg" alt="" /> Pixel
         </span>
         <span className="skeleton-block" />
         <span className="skeleton-block" />

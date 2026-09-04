@@ -68,7 +68,7 @@ export function FeedScreen() {
       <div className="app-shell feed-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel feed">
-            <img src="/pixel.svg" alt="" /> Pixel by imprfct
+            <img src="/pixel.svg" alt="" /> Pixel
           </Link>
           <ProfileShortcut />
         </header>

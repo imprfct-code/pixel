@@ -25,8 +25,8 @@ function LegalShell({ children }: { children: ReactNode }) {
   return (
     <div className="app-shell legal-shell">
       <header className="site-header">
-        <Link className="wordmark" to="/" aria-label="Pixel by imprfct home">
-          <img src="/pixel.svg" alt="" /> Pixel by imprfct
+        <Link className="wordmark" to="/" aria-label="Pixel home">
+          <img src="/pixel.svg" alt="" /> Pixel
         </Link>
       </header>
       <main className="page-shell legal-page">{children}</main>
@@ -37,8 +37,8 @@ function LegalShell({ children }: { children: ReactNode }) {
 
 export function PrivacyScreen() {
   usePageMetadata(
-    "Privacy Policy · Pixel by imprfct",
-    "How Pixel by imprfct collects, uses, and protects personal information.",
+    "Privacy Policy · Pixel",
+    "How Pixel collects, uses, and protects personal information.",
   );
 
   return (
@@ -49,8 +49,8 @@ export function PrivacyScreen() {
         <p className="legal-updated">Last updated {UPDATED_AT}</p>
 
         <p className="legal-lead">
-          Pixel by imprfct is a place to publish pixel art and keep a record of creative practice.
-          This policy explains what information the service processes and why.
+          Pixel is a place to publish pixel art and keep a record of creative practice. This policy
+          explains what information the service processes and why.
         </p>
 
         <section>
@@ -139,10 +139,7 @@ export function PrivacyScreen() {
 }
 
 export function TermsScreen() {
-  usePageMetadata(
-    "Terms of Service · Pixel by imprfct",
-    "Terms governing use of the Pixel by imprfct service.",
-  );
+  usePageMetadata("Terms of Service · Pixel", "Terms governing use of the Pixel service.");
 
   return (
     <LegalShell>
@@ -152,8 +149,8 @@ export function TermsScreen() {
         <p className="legal-updated">Last updated {UPDATED_AT}</p>
 
         <p className="legal-lead">
-          These terms govern your use of Pixel by imprfct. By creating an account or using the
-          service, you agree to them.
+          These terms govern your use of Pixel. By creating an account or using the service, you
+          agree to them.
         </p>
 
         <section>

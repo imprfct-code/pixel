@@ -46,7 +46,7 @@ export function PixelApp({
       <div className="app-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel feed">
-            <img src="/pixel.svg" alt="" /> Pixel by imprfct
+            <img src="/pixel.svg" alt="" /> Pixel
           </Link>
           <nav>
             <button className="header-upload" type="button" onClick={() => openUpload()}>
