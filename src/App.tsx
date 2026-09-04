@@ -1,6 +1,6 @@
 import { Plus, Settings } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
-import { Link, Navigate, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import type {
   Entry,
   EntryUpdateInput,
@@ -54,7 +54,7 @@ export function PixelApp({
     <GlobalDrop onSelectFiles={openUpload}>
       <div className="app-shell">
         <header className="site-header">
-          <Link className="wordmark" to="/profile" aria-label="Pixel home">
+          <Link className="wordmark" to="/" aria-label="Pixel feed">
             <img src="/pixel.svg" alt="" /> Pixel
           </Link>
           <nav>
@@ -68,7 +68,6 @@ export function PixelApp({
           </nav>
         </header>
         <main className="page-shell">
-          {pathname === "/" && <Navigate to="/profile" replace />}
           {pathname === "/profile" &&
             (loading ? (
               <p className="status-message">loading</p>

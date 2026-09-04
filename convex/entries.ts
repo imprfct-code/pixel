@@ -31,6 +31,18 @@ function entryPayload(entry: Doc<"entries">, imageUrl: string) {
   };
 }
 
+function userPayload(user: Doc<"users">) {
+  return {
+    id: user._id,
+    username: user.username,
+    displayName: user.displayName ?? null,
+    bio: user.bio ?? null,
+    website: user.website ?? null,
+    avatarUrl: user.avatarUrl,
+    practiceStartedAt: new Date(user.practiceStartedAt).toISOString(),
+  };
+}
+
 export const listMine = query({
   args: {},
   handler: async (ctx) => {
@@ -78,21 +90,44 @@ export const publicProfile = query({
       .collect();
 
     return {
-      user: {
-        id: user._id,
-        username: user.username,
-        displayName: user.displayName ?? null,
-        bio: user.bio ?? null,
-        website: user.website ?? null,
-        avatarUrl: user.avatarUrl,
-        practiceStartedAt: new Date(user.practiceStartedAt).toISOString(),
-      },
+      user: userPayload(user),
       entries: await Promise.all(
         entries
           .filter((entry) => entry.status === "ready" && entry.visibility === "public")
           .map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
       ),
     };
+  },
+});
+
+export const feed = query({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const participants = await Promise.all(
+      users.map(async (user) => {
+        const entries = await ctx.db
+          .query("entries")
+          .withIndex("by_user_created", (q) => q.eq("userId", user._id))
+          .order("desc")
+          .collect();
+        const latest = entries
+          .filter((entry) => entry.status === "ready" && entry.visibility === "public")
+          .slice(0, 3);
+        return {
+          user: userPayload(user),
+          entries: await Promise.all(
+            latest.map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
+          ),
+        };
+      }),
+    );
+
+    return participants.sort((left, right) => {
+      const leftDate = left.entries[0]?.createdAt ?? left.user.practiceStartedAt;
+      const rightDate = right.entries[0]?.createdAt ?? right.user.practiceStartedAt;
+      return rightDate.localeCompare(leftDate);
+    });
   },
 });
 

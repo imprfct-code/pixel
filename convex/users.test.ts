@@ -93,5 +93,6 @@ describe("users", () => {
       avatarUrl: "https://images.pixel.test/avatar.png",
     });
     expect(profile?.entries).toEqual([]);
+    expect(await base.query(api.entries.feed)).toEqual([profile]);
   });
 });

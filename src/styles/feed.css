@@ -1,0 +1,162 @@
+.feed-page {
+  display: grid;
+  gap: 34px;
+}
+.feed-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+}
+.feed-heading h1 {
+  margin: 9px 0 0;
+}
+.feed-heading > span {
+  color: #555;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.feed-list {
+  display: grid;
+  gap: 14px;
+}
+.feed-artist {
+  display: grid;
+  grid-template-columns: 190px minmax(0, 1fr);
+  min-height: 180px;
+  border: 1px solid var(--line);
+  background: #0c0c0c;
+}
+.feed-artist-profile {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+  align-content: start;
+  align-items: center;
+  gap: 10px;
+  padding: 18px;
+  border-right: 1px solid var(--line);
+}
+.feed-artist-profile:hover {
+  background: #111;
+}
+.feed-artist-profile > img {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #412728;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.feed-artist-profile > span {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+.feed-artist-profile strong,
+.feed-artist-profile small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-artist-profile strong {
+  font-size: 11px;
+}
+.feed-artist-profile small {
+  color: #666;
+  font-size: 8px;
+}
+.feed-artist-profile > svg {
+  color: #555;
+}
+.feed-artworks {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.feed-artworks > button {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: #0e0e0e;
+  text-align: left;
+}
+.feed-artworks > button:last-child {
+  border-right: 0;
+}
+.feed-artwork-image {
+  display: grid;
+  min-height: 132px;
+  place-items: center;
+  overflow: hidden;
+  background-color: #111;
+  background-image:
+    linear-gradient(45deg, #171717 25%, transparent 25%),
+    linear-gradient(-45deg, #171717 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #171717 75%),
+    linear-gradient(-45deg, transparent 75%, #171717 75%);
+  background-position:
+    0 0,
+    0 6px,
+    6px -6px,
+    -6px 0;
+  background-size: 12px 12px;
+}
+.feed-artwork-image img {
+  max-width: 84%;
+  max-height: 118px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  transition: transform 120ms ease;
+}
+.feed-artworks > button:hover .feed-artwork-image img {
+  transform: scale(1.04);
+}
+.feed-artwork-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 8px;
+}
+.feed-artwork-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-artwork-meta time {
+  flex: none;
+  color: #555;
+}
+.feed-no-work,
+.feed-empty {
+  display: grid;
+  min-height: 180px;
+  margin: 0;
+  place-items: center;
+  color: #555;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+@media (max-width: 760px) {
+  .feed-artist {
+    grid-template-columns: 1fr;
+  }
+  .feed-artist-profile {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .feed-artworks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .feed-artworks > button:nth-child(2) {
+    border-right: 0;
+  }
+  .feed-artworks > button:nth-child(3) {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--line);
+  }
+}

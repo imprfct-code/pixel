@@ -11,7 +11,7 @@ export function PublicProfileScreen() {
   return (
     <div className="app-shell public-profile-shell">
       <header className="site-header">
-        <Link className="wordmark" to={`/${profile?.user.username ?? handle}`} aria-label="Pixel">
+        <Link className="wordmark" to="/" aria-label="Pixel feed">
           <img src="/pixel.svg" alt="" /> Pixel
         </Link>
         <Link className="header-settings" to="/profile">

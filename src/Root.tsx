@@ -4,10 +4,11 @@ import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
 import { LivePixel } from "./LivePixel";
+import { FeedScreen } from "./screens/FeedScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
 import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
 
-const PROTECTED_PATHS = ["/", "/profile", "/upload", "/settings", "/entries/:entryId"];
+const PROTECTED_PATHS = ["/profile", "/upload", "/settings", "/entries/:entryId"];
 
 export function SetupScreen() {
   return (
@@ -24,6 +25,7 @@ function ConfiguredPixel() {
   return (
     <Routes>
       <Route path="/sso-callback" element={<SSOCallbackScreen />} />
+      <Route path="/" element={<FeedScreen />} />
       <Route
         path="/sign-in/*"
         element={
