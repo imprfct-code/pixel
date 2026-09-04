@@ -7,6 +7,7 @@ const demoUser: UserSummary = {
   username: "pixel-artist",
   displayName: "Pixel Artist",
   practiceStartedAt: new Date(Date.now() - 45 * 86_400_000).toISOString(),
+  avatarUrl: "/avatar.png",
 };
 
 export function DemoPixel() {

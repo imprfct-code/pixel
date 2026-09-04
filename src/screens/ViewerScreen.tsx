@@ -1,8 +1,9 @@
-import { ArrowLeft, Grid3X3, LockKeyhole, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Grid3X3, LockKeyhole, Share2 } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Entry } from "../../shared/pixel";
 import { ArtworkImage } from "../components/ArtworkImage";
+import { downloadImage } from "../lib/image";
 
 const SCALES = [1, 2, 4, 8, 16] as const;
 
@@ -12,12 +13,11 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
   const [scale, setScale] = useState<(typeof SCALES)[number]>(4);
   const [checker, setChecker] = useState(true);
 
-  if (loading) return <p className="status-message">loading artwork…</p>;
+  if (loading) return <p className="status-message">loading</p>;
   if (!entry) {
     return (
       <section className="not-found">
-        <p className="eyebrow">missing entry</p>
-        <h1>This piece is not in your log.</h1>
+        <h1>Entry not found</h1>
         <Link className="button" to="/">
           back to timeline
         </Link>
@@ -32,7 +32,6 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
           <ArrowLeft size={15} /> timeline
         </Link>
         <div>
-          <p className="eyebrow">practice entry</p>
           <h1>{entry.title ?? entry.originalFilename}</h1>
         </div>
         <span className="visibility large">
@@ -40,7 +39,7 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
           {entry.visibility}
         </span>
       </div>
-      <div className={`pixel-stage ${checker ? "checker" : ""}`}>
+      <div className={`pixel-stage ${checker ? "checker" : ""}`} data-drop-exclude="true">
         <ArtworkImage
           src={entry.imageUrl}
           alt={entry.title ?? entry.originalFilename}
@@ -62,6 +61,14 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
           onClick={() => setChecker((value) => !value)}
         >
           <Grid3X3 size={14} /> checker
+        </button>
+        <button
+          className="checker-control"
+          onClick={() =>
+            void downloadImage(entry.imageUrl, entry.originalFilename).catch(() => undefined)
+          }
+        >
+          <Download size={14} /> download
         </button>
         <span>
           {entry.width}×{entry.height}px · {Math.ceil(entry.fileSize / 1024)} KB

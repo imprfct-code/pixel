@@ -70,12 +70,9 @@ footer {
   font-weight: 650;
   letter-spacing: -0.03em;
 }
-.wordmark > span {
-  width: 12px;
-  height: 12px;
-  background: var(--rose);
-  box-shadow: 5px -5px 0 #7f4a4c;
-  image-rendering: pixelated;
+.wordmark > img {
+  width: 18px;
+  height: 18px;
 }
 .header-upload {
   display: inline-flex;
@@ -163,19 +160,14 @@ h2 {
   padding-bottom: 48px;
 }
 .profile-mark {
-  display: grid;
   width: 56px;
   height: 56px;
-  place-items: center;
-  background: #171111;
   border: 1px solid #412728;
-  color: var(--rose);
-  font-size: 15px;
-  font-weight: 600;
-  text-transform: uppercase;
+  object-fit: cover;
+  image-rendering: pixelated;
 }
 .profile-copy h1 {
-  margin: 6px 0 7px;
+  margin: 0 0 7px;
   font-size: clamp(32px, 5vw, 54px);
 }
 .profile-note {
@@ -206,27 +198,86 @@ h2 {
 .heatmap-section {
   padding: 24px 0 42px;
   border-top: 1px solid var(--line);
+  overflow-x: auto;
 }
-.heatmap {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(7, 7px);
-  grid-auto-flow: column;
-  gap: 5px;
+.heatmap-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 680px;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+}
+.heatmap-legend i {
+  width: 8px;
+  height: 8px;
+  background: #111;
+}
+.heatmap-legend i[data-level="1"] {
+  background: rgba(199, 120, 122, 0.2);
+}
+.heatmap-legend i[data-level="2"] {
+  background: rgba(199, 120, 122, 0.35);
+}
+.heatmap-legend i[data-level="3"] {
+  background: rgba(199, 120, 122, 0.55);
+}
+.heatmap-legend i[data-level="4"] {
+  background: rgba(199, 120, 122, 0.8);
+}
+.heatmap-legend .milestone-key {
+  margin-left: 8px;
+  box-shadow: inset 0 0 0 1px #e8e8e8;
+}
+.heatmap-grid {
+  display: flex;
+  min-width: 680px;
+  gap: 3px;
+}
+.heatmap-week {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
 }
 .heatmap-cell {
-  min-width: 5px;
-  background: #1a1a1a;
+  width: 100%;
+  aspect-ratio: 1;
+  background: #111;
+  outline: none;
+  transition: transform 100ms ease-out;
+}
+.heatmap-cell[data-padding="true"] {
+  visibility: hidden;
+}
+.heatmap-cell[data-future="true"] {
+  background: #0d0d0d;
 }
 .heatmap-cell[data-level="1"] {
-  background: #4e3031;
+  background: rgba(199, 120, 122, 0.2);
 }
 .heatmap-cell[data-level="2"] {
-  background: #754648;
+  background: rgba(199, 120, 122, 0.35);
 }
 .heatmap-cell[data-level="3"] {
-  background: #9e5f61;
+  background: rgba(199, 120, 122, 0.55);
 }
 .heatmap-cell[data-level="4"] {
-  background: var(--rose);
+  background: rgba(199, 120, 122, 0.8);
+}
+.heatmap-cell[data-milestone="true"] {
+  box-shadow: inset 0 0 0 1px #e8e8e8;
+}
+.heatmap-cell:hover,
+.heatmap-cell:focus-visible {
+  position: relative;
+  z-index: 2;
+  transform: scale(1.18);
 }

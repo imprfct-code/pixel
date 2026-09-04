@@ -184,3 +184,86 @@ fieldset small {
   gap: 9px;
   padding-top: 4px;
 }
+
+.global-drop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 5, 5, 0.86);
+  backdrop-filter: blur(8px);
+  animation: drop-overlay-in 140ms ease-out both;
+}
+.global-drop-panel {
+  position: relative;
+  display: grid;
+  width: min(420px, 100%);
+  min-height: 220px;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  border: 1px solid #3b3b3b;
+  background: #0b0b0b;
+  box-shadow: inset 0 0 0 1px #111;
+}
+.global-drop[data-state="ready"] .global-drop-panel {
+  border-color: var(--rose);
+}
+.global-drop-panel strong {
+  max-width: calc(100% - 64px);
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.global-drop-panel > span {
+  color: #666;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.global-drop-panel > button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #333;
+  background: transparent;
+}
+.global-drop-progress {
+  width: calc(100% - 64px);
+  height: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+  background: #202020;
+}
+.global-drop-progress i {
+  display: block;
+  width: 8%;
+  height: 100%;
+  background: var(--rose);
+  transition: width 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.global-drop[data-state="reading"] .global-drop-progress i {
+  width: 30%;
+}
+.global-drop[data-state="uploading"] .global-drop-progress i {
+  width: 72%;
+}
+.global-drop[data-state="done"] .global-drop-progress i,
+.global-drop[data-state="error"] .global-drop-progress i {
+  width: 100%;
+}
+.global-drop[data-state="error"] .global-drop-progress i {
+  background: #df8b8e;
+}
+@keyframes drop-overlay-in {
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+}

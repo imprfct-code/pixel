@@ -7,6 +7,7 @@ export interface UserSummary {
   username: string;
   displayName: string | null;
   practiceStartedAt: string;
+  avatarUrl?: string;
 }
 
 export interface Entry {

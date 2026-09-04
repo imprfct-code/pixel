@@ -10,24 +10,7 @@ import {
 } from "react";
 import { Link } from "react-router";
 import type { UploadInput, Visibility } from "../../shared/pixel";
-
-const ACCEPTED_TYPES = new Set(["image/png", "image/gif"]);
-
-function imageSize(file: File) {
-  return new Promise<{ width: number; height: number }>((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      resolve({ width: image.naturalWidth, height: image.naturalHeight });
-      URL.revokeObjectURL(url);
-    };
-    image.onerror = () => {
-      reject(new Error("The image could not be read"));
-      URL.revokeObjectURL(url);
-    };
-    image.src = url;
-  });
-}
+import { readImageSize, validateImageFile } from "../lib/image";
 
 export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => Promise<string> }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,12 +31,10 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
   function choose(nextFile?: File) {
     setError(undefined);
     if (!nextFile) return;
-    if (!ACCEPTED_TYPES.has(nextFile.type)) {
-      setError("Choose a PNG or GIF file.");
-      return;
-    }
-    if (nextFile.size > 10 * 1024 * 1024) {
-      setError("Keep the file at 10 MB or below.");
+    try {
+      validateImageFile(nextFile);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Invalid file");
       return;
     }
     setFile(nextFile);
@@ -61,12 +42,17 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
 
   function handleDrop(event: DragEvent<HTMLDivElement>) {
     event.preventDefault();
+    event.stopPropagation();
     setDragging(false);
     choose(event.dataTransfer.files[0]);
   }
 
   function handlePaste(event: ClipboardEvent<HTMLDivElement>) {
-    choose(Array.from(event.clipboardData.files).find((item) => ACCEPTED_TYPES.has(item.type)));
+    choose(
+      Array.from(event.clipboardData.files).find(
+        (item) => item.type === "image/png" || item.type === "image/gif",
+      ),
+    );
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -76,7 +62,7 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
     setError(undefined);
     const form = new FormData(event.currentTarget);
     try {
-      const dimensions = await imageSize(file);
+      const dimensions = await readImageSize(file);
       const title = form.get("title");
       const note = form.get("note");
       await onUpload({
@@ -89,7 +75,7 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
         milestone: form.get("milestone") === "on",
       });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Upload failed. Try again.");
+      setError(cause instanceof Error ? cause.message : "Upload failed");
       setSubmitting(false);
     }
   }
@@ -97,9 +83,8 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
   return (
     <section className="upload-page">
       <div className="page-intro">
-        <p className="eyebrow">new practice entry</p>
-        <h1>Keep the evidence.</h1>
-        <p>Rough studies are the point. Every new upload starts private.</p>
+        <p className="eyebrow">upload</p>
+        <h1>New entry</h1>
       </div>
       <form className="upload-form" onSubmit={submit}>
         <div
@@ -110,6 +95,7 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
           onDrop={handleDrop}
           onPaste={handlePaste}
           tabIndex={0}
+          data-drop-exclude="true"
         >
           {previewUrl && file ? (
             <>
@@ -130,7 +116,7 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
           ) : (
             <button className="drop-prompt" type="button" onClick={() => inputRef.current?.click()}>
               <ImagePlus size={24} strokeWidth={1.5} />
-              <strong>drop, paste, or choose a file</strong>
+              <strong>drop / paste / choose</strong>
               <span>PNG or GIF · up to 10 MB</span>
             </button>
           )}
@@ -170,7 +156,7 @@ export function UploadScreen({ onUpload }: { onUpload: (input: UploadInput) => P
                 </button>
               ))}
             </div>
-            <small>Private is the default. You can choose when a study is ready to be seen.</small>
+            <small>default / private</small>
           </fieldset>
           <label className="checkbox">
             <input type="checkbox" name="milestone" /> mark as a milestone

@@ -22,13 +22,14 @@ export function LivePixel() {
     });
   }, [clerkUser, currentUser, ensureUser]);
 
-  if (!currentUser) return <p className="status-message full-page">preparing your private log…</p>;
+  if (!currentUser) return <p className="status-message full-page">loading</p>;
 
   const user: UserSummary = {
     id: currentUser._id,
     username: currentUser.username,
     displayName: currentUser.displayName ?? null,
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
+    avatarUrl: "/avatar.png",
   };
 
   async function upload(input: UploadInput) {

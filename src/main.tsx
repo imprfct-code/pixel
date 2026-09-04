@@ -18,12 +18,11 @@ const configured = typeof convexUrl === "string" && typeof clerkKey === "string"
 export function SignInGate() {
   return (
     <main className="sign-in-gate">
-      <div className="pixel-glyph" aria-hidden="true" />
-      <p className="eyebrow">visual practice log</p>
-      <h1>See yourself becoming better.</h1>
-      <p>Keep every pixel study in one quiet, chronological record.</p>
+      <img className="pixel-glyph" src="/pixel.svg" alt="" />
+      <h1>Pixel</h1>
+      <p>Visual practice log</p>
       <SignInButton mode="modal">
-        <button className="button primary">start your log</button>
+        <button className="button primary">sign in</button>
       </SignInButton>
     </main>
   );
@@ -36,7 +35,7 @@ createRoot(root).render(
         <ConvexProviderWithClerk client={new ConvexReactClient(convexUrl)} useAuth={useAuth}>
           <Show when="signed-in" fallback={<SignInGate />}>
             <AuthLoading>
-              <p className="status-message full-page">signing in…</p>
+              <p className="status-message full-page">signing in</p>
             </AuthLoading>
             <Unauthenticated>
               <SignInGate />

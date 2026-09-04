@@ -1,7 +1,24 @@
 import { LockKeyhole, Share2 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
 import type { Entry } from "../../shared/pixel";
 import { ArtworkImage } from "./ArtworkImage";
+import { ImageLightbox } from "./ImageLightbox";
+
+const PREVIEW_ENTRY: Entry = {
+  id: "practice-studies",
+  title: "Practice studies",
+  note: null,
+  originalFilename: "practice-studies.png",
+  mimeType: "image/png",
+  width: 1536,
+  height: 1024,
+  fileSize: 1_300_000,
+  visibility: "private",
+  milestone: false,
+  createdAt: new Date().toISOString(),
+  imageUrl: "/practice-studies.png",
+};
 
 function dateLabel(value: string) {
   const date = new Date(value);
@@ -26,35 +43,47 @@ function groupEntries(entries: Entry[]) {
 }
 
 export function Timeline({ entries }: { entries: Entry[] }) {
+  const [openEntry, setOpenEntry] = useState<Entry>();
+
   if (entries.length === 0) {
     return (
-      <section className="empty-timeline">
-        <div className="section-heading">
-          <h2>your timeline</h2>
-          <span>day one is open</span>
-        </div>
-        <img
-          className="practice-preview"
-          src="/practice-studies.png"
-          alt="Six pixel art practice studies: a sword, cottage, potion, portrait, tree, and walking character"
-        />
-        <div className="empty-copy">
-          <div>
-            <strong>Every piece counts.</strong>
-            <p>Your rough attempts belong here too. The contrast becomes the proof.</p>
+      <>
+        <section className="empty-timeline">
+          <div className="section-heading">
+            <h2>timeline</h2>
+            <span>0 entries</span>
           </div>
-          <Link className="button primary" to="/upload">
-            upload your first piece
-          </Link>
-        </div>
-      </section>
+          <button
+            className="practice-preview-trigger"
+            type="button"
+            onClick={() => setOpenEntry(PREVIEW_ENTRY)}
+            data-drop-exclude="true"
+            aria-label="Open practice studies"
+          >
+            <img
+              className="practice-preview"
+              src="/practice-studies.png"
+              alt="Six pixel art practice studies"
+            />
+          </button>
+          <div className="empty-copy">
+            <div>
+              <strong>No entries</strong>
+            </div>
+            <Link className="button primary" to="/upload">
+              upload
+            </Link>
+          </div>
+        </section>
+        {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
+      </>
     );
   }
 
   return (
     <section className="timeline" aria-labelledby="timeline-heading">
       <div className="section-heading">
-        <h2 id="timeline-heading">your timeline</h2>
+        <h2 id="timeline-heading">timeline</h2>
         <span>newest first</span>
       </div>
       {groupEntries(entries).map(([label, items]) => (
@@ -67,12 +96,20 @@ export function Timeline({ entries }: { entries: Entry[] }) {
           </div>
           <div className="entry-grid">
             {items.map((entry) => (
-              <Link className="entry-card" to={`/entries/${entry.id}`} key={entry.id}>
-                <div className="entry-image">
+              <article className="entry-card" key={entry.id}>
+                <button
+                  className="entry-image"
+                  type="button"
+                  onClick={() => setOpenEntry(entry)}
+                  data-drop-exclude="true"
+                  aria-label={`Open ${entry.title ?? entry.originalFilename}`}
+                >
                   <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
-                </div>
+                </button>
                 <div className="entry-meta">
-                  <strong>{entry.title ?? entry.originalFilename}</strong>
+                  <Link to={`/entries/${entry.id}`}>
+                    <strong>{entry.title ?? entry.originalFilename}</strong>
+                  </Link>
                   <span>
                     {entry.width}×{entry.height}
                   </span>
@@ -85,11 +122,12 @@ export function Timeline({ entries }: { entries: Entry[] }) {
                     {entry.visibility}
                   </span>
                 </div>
-              </Link>
+              </article>
             ))}
           </div>
         </div>
       ))}
+      {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
     </section>
   );
 }

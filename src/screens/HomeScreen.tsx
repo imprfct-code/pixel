@@ -14,13 +14,10 @@ export function HomeScreen({ user, entries }: { user: UserSummary; entries: Entr
   return (
     <>
       <section className="profile-block">
-        <div className="profile-mark" aria-hidden="true">
-          {user.username.slice(0, 2)}
-        </div>
+        <img className="profile-mark" src={user.avatarUrl ?? "/avatar.png"} alt="" />
         <div className="profile-copy">
-          <p className="eyebrow">learning in public, practicing in private</p>
           <h1>@{user.username}</h1>
-          <p className="profile-note">A visual log of becoming better.</p>
+          {user.displayName && <p className="profile-note">{user.displayName}</p>}
         </div>
         <dl className="stats">
           <div>
