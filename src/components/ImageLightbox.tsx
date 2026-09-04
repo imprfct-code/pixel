@@ -14,6 +14,8 @@ import { ArtworkImage } from "./ArtworkImage";
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 16;
 const BUTTON_ZOOM_FACTOR = 1.25;
+const TRACKPAD_ZOOM_SENSITIVITY = 0.006;
+const WHEEL_ZOOM_SENSITIVITY = 0.002;
 
 function clampZoom(zoom: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
@@ -114,7 +116,11 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
     if (!canvas) return;
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
-      changeZoom(Math.exp(-event.deltaY * 0.002), event.clientX, event.clientY);
+      const pixelDelta =
+        event.deltaMode === WheelEvent.DOM_DELTA_PIXEL ? event.deltaY : event.deltaY * 16;
+      const sensitivity =
+        Math.abs(pixelDelta) < 40 ? TRACKPAD_ZOOM_SENSITIVITY : WHEEL_ZOOM_SENSITIVITY;
+      changeZoom(Math.exp(-pixelDelta * sensitivity), event.clientX, event.clientY);
     };
     canvas.addEventListener("wheel", handleWheel, { passive: false });
     return () => canvas.removeEventListener("wheel", handleWheel);
