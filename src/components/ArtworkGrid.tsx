@@ -19,9 +19,13 @@ function cardSize(width: number, height: number, index: number) {
 export function ArtworkGrid({
   works,
   onOpen,
+  controls = true,
+  layout = "grid",
 }: {
   works: ArtworkGridItem[];
   onOpen: (entry: Entry) => void;
+  controls?: boolean;
+  layout?: "grid" | "masonry";
 }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"newest" | "oldest">("newest");
@@ -49,28 +53,38 @@ export function ArtworkGrid({
 
   return (
     <>
-      <div className="work-grid-toolbar">
-        <label className="work-search">
-          <Search size={13} />
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="search works"
-            aria-label="Search works"
-          />
-        </label>
-        <div className="work-sort" aria-label="Sort works">
-          <button type="button" aria-pressed={sort === "newest"} onClick={() => setSort("newest")}>
-            <ArrowDown size={11} /> newest
-          </button>
-          <button type="button" aria-pressed={sort === "oldest"} onClick={() => setSort("oldest")}>
-            <ArrowUp size={11} /> oldest
-          </button>
+      {controls && (
+        <div className="work-grid-toolbar">
+          <label className="work-search">
+            <Search size={13} />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="search works"
+              aria-label="Search works"
+            />
+          </label>
+          <div className="work-sort" aria-label="Sort works">
+            <button
+              type="button"
+              aria-pressed={sort === "newest"}
+              onClick={() => setSort("newest")}
+            >
+              <ArrowDown size={11} /> newest
+            </button>
+            <button
+              type="button"
+              aria-pressed={sort === "oldest"}
+              onClick={() => setSort("oldest")}
+            >
+              <ArrowUp size={11} /> oldest
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       {visibleWorks.length > 0 ? (
-        <div className="feed-board">
+        <div className="feed-board" data-layout={layout}>
           {visibleWorks.map(({ entry, author }, index) => (
             <article
               className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}
@@ -93,7 +107,11 @@ export function ArtworkGrid({
           ))}
         </div>
       ) : (
-        <p className="work-grid-empty">No matching works</p>
+        <div className="work-grid-empty" role="status">
+          <img src="/pixel.svg" alt="" />
+          <strong>nothing found</strong>
+          <span>try another search</span>
+        </div>
       )}
     </>
   );

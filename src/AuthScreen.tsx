@@ -1,7 +1,7 @@
 import { useSignIn, useSignUp } from "@clerk/react";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
 type Strategy = "oauth_github" | "oauth_google";
 
@@ -48,7 +48,13 @@ export function AuthScreen({ mode }: { mode: "sign-in" | "sign-up" }) {
   const { signUp } = useSignUp();
   const [active, setActive] = useState<Strategy>();
   const [error, setError] = useState("");
+  const [searchParams] = useSearchParams();
   const resource = mode === "sign-in" ? signIn : signUp;
+  const requestedReturnTo = searchParams.get("returnTo");
+  const returnTo =
+    requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//")
+      ? requestedReturnTo
+      : "/";
 
   async function continueWith(strategy: Strategy) {
     if (!resource) return;
@@ -57,7 +63,7 @@ export function AuthScreen({ mode }: { mode: "sign-in" | "sign-up" }) {
     try {
       const result = await resource.sso({
         strategy,
-        redirectUrl: "/",
+        redirectUrl: returnTo,
         redirectCallbackUrl: "/sso-callback",
       });
       if (result.error) throw result.error;
@@ -110,7 +116,9 @@ export function AuthScreen({ mode }: { mode: "sign-in" | "sign-up" }) {
           )}
           <p className="auth-switch">
             {isSignIn ? "New to Pixel?" : "Already have an account?"}
-            <Link to={isSignIn ? "/sign-up" : "/sign-in"}>
+            <Link
+              to={`${isSignIn ? "/sign-up" : "/sign-in"}?returnTo=${encodeURIComponent(returnTo)}`}
+            >
               {isSignIn ? "Create account" : "Sign in"}
             </Link>
           </p>

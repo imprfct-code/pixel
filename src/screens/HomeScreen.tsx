@@ -5,7 +5,6 @@ import type { Entry, ProfileInput, UserSummary } from "../../shared/pixel";
 import { ArtworkGrid } from "../components/ArtworkGrid";
 import { AvatarLightbox } from "../components/AvatarLightbox";
 import { Heatmap } from "../components/Heatmap";
-import { ImageLightbox } from "../components/ImageLightbox";
 import { InlineProfileField } from "../components/InlineProfileField";
 
 function practiceDays(entries: Entry[]) {
@@ -29,7 +28,6 @@ export function HomeScreen({
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [openEntry, setOpenEntry] = useState<Entry>();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const since = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
     .format(new Date(user.practiceStartedAt))
@@ -174,16 +172,17 @@ export function HomeScreen({
         {entries.length > 0 ? (
           <ArtworkGrid
             works={entries.map((entry) => ({ entry, author: user }))}
-            onOpen={(entry) => {
-              if (editable) void navigate(`/entries/${entry.id}`);
-              else setOpenEntry(entry);
-            }}
+            layout="masonry"
+            onOpen={(entry) =>
+              void navigate(`/entries/${entry.id}`, {
+                state: { returnTo: editable ? "/profile" : `/${user.username}` },
+              })
+            }
           />
         ) : (
           <p className="profile-gallery-empty">No works yet</p>
         )}
       </section>
-      {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
       {avatarOpen && (
         <AvatarLightbox
           src={user.avatarUrl ?? "/avatar.png"}

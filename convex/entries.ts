@@ -70,6 +70,33 @@ export const getMine = query({
   },
 });
 
+export const view = query({
+  args: { entryId: v.id("entries") },
+  handler: async (ctx, { entryId }) => {
+    const entry = await ctx.db.get("entries", entryId);
+    if (!entry || entry.status !== "ready") return null;
+
+    const identity = await ctx.auth.getUserIdentity();
+    const viewer = identity
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+          .unique()
+      : null;
+    const canEdit = viewer?._id === entry.userId;
+
+    if (entry.visibility === "private" && !canEdit) {
+      return { status: "private" as const };
+    }
+
+    return {
+      status: "ready" as const,
+      canEdit,
+      entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+    };
+  },
+});
+
 export const publicProfile = query({
   args: { username: v.string() },
   handler: async (ctx, { username }) => {

@@ -7,8 +7,9 @@ import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
 import { SSOCallbackScreen } from "./screens/SSOCallbackScreen";
+import { ViewerScreen } from "./screens/ViewerScreen";
 
-const PROTECTED_PATHS = ["/profile", "/upload", "/entries/:entryId"];
+const PROTECTED_PATHS = ["/profile", "/upload"];
 const CLERK_APPEARANCE = {
   variables: {
     colorPrimary: "#c7787a",
@@ -157,6 +158,7 @@ function ConfiguredPixel() {
     <Routes>
       <Route path="/sso-callback" element={<SSOCallbackScreen />} />
       <Route path="/" element={<FeedScreen />} />
+      <Route path="/entries/:entryId" element={<ViewerScreen />} />
       <Route
         path="/sign-in/*"
         element={

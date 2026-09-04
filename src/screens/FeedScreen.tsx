@@ -6,7 +6,6 @@ import { api } from "../../convex/_generated/api";
 import type { Entry } from "../../shared/pixel";
 import { ArtworkGrid, type ArtworkGridItem } from "../components/ArtworkGrid";
 import { GlobalDrop } from "../components/GlobalDrop";
-import { ImageLightbox } from "../components/ImageLightbox";
 import { UploadNotice } from "../components/UploadNotice";
 import { usePixelUpload } from "../hooks/usePixelUpload";
 import { UploadScreen } from "./UploadScreen";
@@ -47,7 +46,6 @@ export function FeedScreen() {
   const works = useQuery(api.entries.feed);
   const mine = useQuery(api.entries.listMine, isSignedIn ? {} : "skip");
   const upload = usePixelUpload();
-  const [openEntry, setOpenEntry] = useState<Entry>();
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
@@ -80,7 +78,10 @@ export function FeedScreen() {
           ) : (
             <ArtworkGrid
               works={works as ArtworkGridItem[]}
-              onOpen={(entry) => setOpenEntry(entry)}
+              onOpen={(entry) =>
+                void navigate(`/entries/${entry.id}`, { state: { returnTo: "/" } })
+              }
+              controls={false}
             />
           )}
         </main>
@@ -122,7 +123,6 @@ export function FeedScreen() {
             onClose={() => setUploadNotice(undefined)}
           />
         )}
-        {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
       </div>
     </GlobalDrop>
   );

@@ -2,8 +2,7 @@ import { useUser, UserButton } from "@clerk/react";
 import { useMutation, useQuery } from "convex/react";
 import { useEffect } from "react";
 import { api } from "../convex/_generated/api";
-import type { Id } from "../convex/_generated/dataModel";
-import type { Entry, EntryUpdateInput, ProfileInput, UserSummary } from "../shared/pixel";
+import type { Entry, ProfileInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
 import { usePixelUpload } from "./hooks/usePixelUpload";
 
@@ -15,8 +14,6 @@ export function LivePixel() {
   const saveAvatar = useMutation(api.users.updateAvatar);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const upload = usePixelUpload();
-  const updateEntryMutation = useMutation(api.entries.updateMine);
-  const removeEntryMutation = useMutation(api.entries.removeMine);
 
   useEffect(() => {
     if (!clerkUser || currentUser !== null) return;
@@ -56,14 +53,6 @@ export function LivePixel() {
     await saveAvatar({ avatarUrl: clerkUser.imageUrl });
   }
 
-  async function updateEntry(entryId: string, input: EntryUpdateInput) {
-    await updateEntryMutation({ entryId: entryId as Id<"entries">, ...input });
-  }
-
-  async function removeEntry(entryId: string) {
-    await removeEntryMutation({ entryId: entryId as Id<"entries"> });
-  }
-
   return (
     <PixelApp
       user={user}
@@ -72,8 +61,6 @@ export function LivePixel() {
       onUpload={upload}
       onSaveProfile={updateProfile}
       onAvatarUpload={updateAvatar}
-      onUpdateEntry={updateEntry}
-      onDeleteEntry={removeEntry}
       account={<UserButton appearance={{ elements: { avatarBox: "account-avatar" } }} />}
     />
   );

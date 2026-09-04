@@ -287,13 +287,16 @@ fieldset small {
   bottom: 18px;
   z-index: 30;
   display: grid;
-  grid-template-columns: 38px minmax(72px, auto) auto 26px;
+  grid-template-columns: 38px minmax(72px, auto) 26px;
   align-items: center;
   gap: 9px;
   padding: 7px;
   border: 1px solid #383838;
   background: #0d0d0d;
   box-shadow: 0 18px 52px rgba(0, 0, 0, 0.58);
+}
+.upload-notice[data-share="true"] {
+  grid-template-columns: 38px minmax(72px, auto) auto 26px;
 }
 .upload-notice-preview {
   width: 38px;

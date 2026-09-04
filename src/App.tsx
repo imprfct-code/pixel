@@ -1,18 +1,11 @@
 import { Plus } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import type {
-  Entry,
-  EntryUpdateInput,
-  ProfileInput,
-  UploadInput,
-  UserSummary,
-} from "../shared/pixel";
+import type { Entry, ProfileInput, UploadInput, UserSummary } from "../shared/pixel";
 import { GlobalDrop } from "./components/GlobalDrop";
 import { UploadNotice } from "./components/UploadNotice";
 import { HomeScreen } from "./screens/HomeScreen";
 import { UploadScreen } from "./screens/UploadScreen";
-import { ViewerScreen } from "./screens/ViewerScreen";
 
 export function PixelApp({
   user,
@@ -21,8 +14,6 @@ export function PixelApp({
   onUpload,
   onSaveProfile,
   onAvatarUpload,
-  onUpdateEntry,
-  onDeleteEntry,
   account,
 }: {
   user: UserSummary;
@@ -31,8 +22,6 @@ export function PixelApp({
   onUpload: (input: UploadInput) => Promise<string>;
   onSaveProfile: (input: ProfileInput) => Promise<void>;
   onAvatarUpload: (file: File) => Promise<void>;
-  onUpdateEntry: (entryId: string, input: EntryUpdateInput) => Promise<void>;
-  onDeleteEntry: (entryId: string) => Promise<void>;
   account?: ReactNode;
 }) {
   const navigate = useNavigate();
@@ -104,14 +93,6 @@ export function PixelApp({
                 }}
               />
             </>
-          )}
-          {pathname.startsWith("/entries/") && (
-            <ViewerScreen
-              entries={entries}
-              loading={loading}
-              onUpdate={onUpdateEntry}
-              onDelete={onDeleteEntry}
-            />
           )}
         </main>
         {uploadNotice && (

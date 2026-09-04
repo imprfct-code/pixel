@@ -32,19 +32,23 @@ export function UploadNotice({
     copiedTimer.current = setTimeout(() => setCopied(false), 1800);
   }
 
+  const canShare = Boolean(entry && entry.visibility !== "private");
+
   return (
-    <aside className="upload-notice" role="status">
+    <aside className="upload-notice" role="status" data-share={canShare || undefined}>
       <div className="upload-notice-preview">{entry && <img src={entry.imageUrl} alt="" />}</div>
       <strong>{count > 1 ? `${count} uploaded` : "uploaded"}</strong>
-      <button
-        className="upload-notice-share"
-        type="button"
-        data-copied={copied || undefined}
-        onClick={() => void copyLink()}
-      >
-        {copied ? <Check size={13} /> : <Share2 size={13} />}
-        {copied ? "copied" : "share"}
-      </button>
+      {canShare && (
+        <button
+          className="upload-notice-share"
+          type="button"
+          data-copied={copied || undefined}
+          onClick={() => void copyLink()}
+        >
+          {copied ? <Check size={13} /> : <Share2 size={13} />}
+          {copied ? "copied" : "share"}
+        </button>
+      )}
       <button className="upload-notice-close" type="button" onClick={onClose} aria-label="Close">
         <X size={14} />
       </button>
