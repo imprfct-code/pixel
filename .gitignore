@@ -13,6 +13,7 @@ dist
 .env
 .env.*
 !.env.example
+r2convex.md
 
 .idea
 .DS_Store
