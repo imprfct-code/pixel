@@ -619,3 +619,17 @@ h2 {
 .heatmap-tooltip[data-visible="true"] {
   opacity: 1;
 }
+
+.heatmap-year {
+  width: auto;
+  padding: 4px 6px;
+  border: 1px solid var(--line);
+  background: #101010;
+  color: #aaa;
+  font: inherit;
+  font-size: 10px;
+  color-scheme: dark;
+}
+input[type="date"] {
+  color-scheme: dark;
+}

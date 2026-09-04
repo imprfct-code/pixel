@@ -9,6 +9,7 @@ import {
   type FormEvent,
 } from "react";
 import type { UploadInput, Visibility } from "../../shared/pixel";
+import { calendarDateKey } from "../lib/calendar";
 import { readImageSize, validateImageFile } from "../lib/image";
 
 type UploadDraft = {
@@ -16,10 +17,17 @@ type UploadDraft = {
   title: string;
   note: string;
   visibility: Visibility;
+  practiceDate: string;
 };
 
 function createDraft(file: File): UploadDraft {
-  return { file, title: "", note: "", visibility: "private" };
+  return {
+    file,
+    title: "",
+    note: "",
+    visibility: "private",
+    practiceDate: calendarDateKey(new Date()),
+  };
 }
 
 export function UploadScreen({
@@ -58,6 +66,7 @@ export function UploadScreen({
   );
 
   function choose(files: FileList | File[]) {
+    if (submitting) return;
     setError(undefined);
     const selected = Array.from(files);
     if (selected.length === 0) return;
@@ -90,11 +99,12 @@ export function UploadScreen({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft) return;
+    if (!draft || submitting) return;
     setSubmitting(true);
     setError(undefined);
 
     try {
+      validateImageFile(draft.file);
       const dimensions = await readImageSize(draft.file);
       const entryId = await onUpload({
         file: draft.file,
@@ -102,6 +112,7 @@ export function UploadScreen({
         title: draft.title.trim() || undefined,
         note: draft.note.trim() || undefined,
         visibility: draft.visibility,
+        practiceDate: draft.practiceDate,
       });
       onComplete(entryId);
     } catch (cause) {
@@ -117,10 +128,10 @@ export function UploadScreen({
       aria-labelledby="upload-title"
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!submitting) onClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget && !submitting) onClose();
       }}
     >
       <section className="upload-panel" data-drop-exclude="true">
@@ -129,7 +140,7 @@ export function UploadScreen({
             <p className="eyebrow">upload</p>
             <h1 id="upload-title">New work</h1>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close new work">
+          <button type="button" onClick={onClose} disabled={submitting} aria-label="Close new work">
             <X size={17} />
           </button>
         </header>
@@ -150,6 +161,7 @@ export function UploadScreen({
                   <img src={previewUrl} alt="Selected artwork preview" />
                   <button
                     className="remove-file"
+                    disabled={submitting}
                     type="button"
                     onClick={() => setDraft(undefined)}
                     aria-label={`Remove ${draft.file.name}`}
@@ -186,12 +198,23 @@ export function UploadScreen({
           </div>
           <div className="form-fields">
             <label>
+              work date
+              <input
+                type="date"
+                required
+                max={calendarDateKey(new Date())}
+                value={draft?.practiceDate ?? calendarDateKey(new Date())}
+                disabled={!draft || submitting}
+                onChange={(event) => updateDraft({ practiceDate: event.target.value })}
+              />
+            </label>
+            <label>
               title <span>optional</span>
               <input
                 maxLength={100}
                 placeholder="tiny forest study"
                 value={draft?.title ?? ""}
-                disabled={!draft}
+                disabled={!draft || submitting}
                 onChange={(event) => updateDraft({ title: event.target.value })}
               />
             </label>
@@ -202,11 +225,11 @@ export function UploadScreen({
                 rows={4}
                 placeholder="what changed, what felt hard…"
                 value={draft?.note ?? ""}
-                disabled={!draft}
+                disabled={!draft || submitting}
                 onChange={(event) => updateDraft({ note: event.target.value })}
               />
             </label>
-            <fieldset disabled={!draft}>
+            <fieldset disabled={!draft || submitting}>
               <legend>visibility</legend>
               <div className="segmented">
                 {(["private", "unlisted", "public"] as const).map((option) => (
@@ -214,13 +237,20 @@ export function UploadScreen({
                     key={option}
                     type="button"
                     data-active={draft?.visibility === option}
+                    aria-pressed={draft?.visibility === option}
                     onClick={() => updateDraft({ visibility: option })}
                   >
                     {option}
                   </button>
                 ))}
               </div>
-              <small>default / private</small>
+              <small>
+                {draft?.visibility === "public"
+                  ? "Visible on your profile and in the public feed"
+                  : draft?.visibility === "unlisted"
+                    ? "Anyone with the link can view this work"
+                    : "Only you can view this work"}
+              </small>
             </fieldset>
             {error && (
               <p className="form-error" role="alert">
@@ -228,7 +258,7 @@ export function UploadScreen({
               </p>
             )}
             <div className="form-actions">
-              <button className="button" type="button" onClick={onClose}>
+              <button className="button" type="button" onClick={onClose} disabled={submitting}>
                 cancel
               </button>
               <button className="button primary" type="submit" disabled={!draft || submitting}>

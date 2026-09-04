@@ -1,3 +1,5 @@
+import { paginationOptsValidator } from "convex/server";
+import { validatePracticeDate } from "../shared/dates";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -26,6 +28,7 @@ function entryPayload(entry: Doc<"entries">, imageUrl: string) {
     fileSize: entry.fileSize,
     visibility: entry.visibility,
     createdAt: new Date(entry.createdAt).toISOString(),
+    practiceDate: entry.practiceDate,
     imageUrl,
   };
 }
@@ -130,34 +133,40 @@ export const publicProfile = query({
 });
 
 export const feed = query({
-  args: {},
-  handler: async (ctx) => {
-    const users = await ctx.db.query("users").collect();
-    const usersById = new Map(users.map((user) => [user._id, user]));
-    const entries = await ctx.db.query("entries").collect();
-    const publicEntries = entries
-      .filter((entry) => entry.status === "ready" && entry.visibility === "public")
-      .sort((left, right) => right.createdAt - left.createdAt)
-      .slice(0, 60);
-
-    return Promise.all(
-      publicEntries.flatMap((entry) => {
-        const user = usersById.get(entry.userId);
-        if (!user) return [];
-        return [
-          (async () => ({
-            entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
-            author: userPayload(user),
-          }))(),
-        ];
+  args: { paginationOpts: paginationOptsValidator },
+  handler: async (ctx, { paginationOpts }) => {
+    const result = await ctx.db
+      .query("entries")
+      .withIndex("by_visibility_status_created", (q) =>
+        q.eq("visibility", "public").eq("status", "ready"),
+      )
+      .order("desc")
+      .paginate({ ...paginationOpts, numItems: Math.min(paginationOpts.numItems, 60) });
+    const authors = await Promise.all(
+      [...new Set(result.page.map((entry) => entry.userId))].map((id) => ctx.db.get("users", id)),
+    );
+    const usersById = new Map(authors.flatMap((user) => (user ? [[user._id, user] as const] : [])));
+    const page = await Promise.all(
+      result.page.flatMap((entry) => {
+        const author = usersById.get(entry.userId);
+        return author
+          ? [
+              (async () => ({
+                entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+                author: userPayload(author),
+              }))(),
+            ]
+          : [];
       }),
     );
+    return { ...result, page };
   },
 });
 
 export const updateMine = mutation({
   args: {
     entryId: v.id("entries"),
+    practiceDate: v.optional(v.string()),
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     visibility,
@@ -169,6 +178,10 @@ export const updateMine = mutation({
       throw new Error("Work not found");
     }
     await ctx.db.patch(entry._id, {
+      practiceDate:
+        args.practiceDate === undefined
+          ? entry.practiceDate
+          : validatePracticeDate(args.practiceDate),
       title: optionalText(args.title, 100),
       note: optionalText(args.note, 500),
       visibility: args.visibility,
@@ -200,6 +213,7 @@ export const beginUpload = mutation({
     width: v.number(),
     height: v.number(),
     fileSize: v.number(),
+    practiceDate: v.optional(v.string()),
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     visibility,
@@ -223,6 +237,8 @@ export const beginUpload = mutation({
 
     const entryId = await ctx.db.insert("entries", {
       ...args,
+      practiceDate:
+        args.practiceDate === undefined ? undefined : validatePracticeDate(args.practiceDate),
       originalFilename: args.originalFilename.slice(0, 200),
       title: optionalText(args.title, 100),
       note: optionalText(args.note, 500),

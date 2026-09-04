@@ -34,5 +34,8 @@ export default defineSchema({
     visibility,
     status: v.union(v.literal("uploading"), v.literal("ready")),
     createdAt: v.number(),
-  }).index("by_user_created", ["userId", "createdAt"]),
+    practiceDate: v.optional(v.string()),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_visibility_status_created", ["visibility", "status", "createdAt"]),
 });

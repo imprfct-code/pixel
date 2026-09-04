@@ -103,6 +103,7 @@ export function ImageLightbox({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKey = (event: KeyboardEvent) => {
+      if (document.querySelector("dialog[open]")) return;
       if (event.key === "Escape") onClose();
       if (event.key === "+" || event.key === "=") {
         event.preventDefault();

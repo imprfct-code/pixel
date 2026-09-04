@@ -11,7 +11,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
-import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
+import { entryDate, calendarDateLabel } from "../lib/calendar";
 import { downloadImage } from "../lib/image";
 import { ArtworkImage } from "./ArtworkImage";
 
@@ -21,25 +21,17 @@ export type ArtworkGridItem = {
   canEdit?: boolean;
 };
 
-function cardSize(width: number, height: number, index: number) {
-  const ratio = width / height;
-  if (ratio >= 1.35) return "wide";
-  if (index > 1 && index % 5 === 0) return "large";
-  return ratio <= 0.72 ? "portrait" : "standard";
-}
-
 function ArtworkCard({
   item: { entry, author, canEdit },
-  index,
   onOpen,
   onEdit,
 }: {
   item: ArtworkGridItem;
-  index: number;
   onOpen: (entry: Entry) => void;
   onEdit?: (entry: Entry) => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [actionError, setActionError] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const copiedTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -72,24 +64,34 @@ function ArtworkCard({
   }, [menuOpen]);
 
   async function copyLink() {
-    await navigator.clipboard.writeText(
-      new URL(`/entries/${entry.id}`, window.location.origin).href,
-    );
+    setActionError("");
+    try {
+      await navigator.clipboard.writeText(
+        new URL(`/entries/${entry.id}`, window.location.origin).href,
+      );
+    } catch {
+      setActionError("Could not copy link. Try again.");
+      return;
+    }
     setCopied(true);
     if (copiedTimer.current) clearTimeout(copiedTimer.current);
     copiedTimer.current = setTimeout(() => setCopied(false), 1800);
   }
 
   return (
-    <article className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}>
+    <article className="feed-card">
       <button
         className="feed-card-preview"
         type="button"
-        style={{ aspectRatio: `${entry.width} / ${entry.height}` }}
+        style={{ aspectRatio: String(Math.max(0.75, Math.min(2.5, entry.width / entry.height))) }}
         onClick={() => onOpen(entry)}
         aria-label={`Open ${entry.title ?? entry.originalFilename}`}
       >
-        <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
+        <ArtworkImage
+          src={entry.imageUrl}
+          alt={entry.title ?? entry.originalFilename}
+          loading="lazy"
+        />
       </button>
       <div className="feed-card-actions">
         {entry.visibility !== "private" && (
@@ -131,7 +133,10 @@ function ArtworkCard({
                 type="button"
                 onClick={() => {
                   setMenuOpen(false);
-                  void downloadImage(entry.imageUrl, entry.originalFilename);
+                  setActionError("");
+                  void downloadImage(entry.imageUrl, entry.originalFilename).catch(() => {
+                    setActionError("Download failed. Try again.");
+                  });
                 }}
               >
                 <Download size={12} /> download
@@ -140,6 +145,11 @@ function ArtworkCard({
           )}
         </div>
       </div>
+      {actionError && (
+        <p className="feed-card-error" role="alert">
+          {actionError}
+        </p>
+      )}
       <Link className="feed-card-author" to={`/${author.username}`}>
         <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
         <strong>@{author.username}</strong>
@@ -148,9 +158,8 @@ function ArtworkCard({
   );
 }
 
-function columnCount(width: number, itemCount: number) {
-  const maximum = width < 300 ? 1 : width < 820 ? 2 : width < 1040 ? 3 : 4;
-  return Math.max(1, Math.min(itemCount, maximum));
+function columnCount(width: number) {
+  return Math.max(1, Math.min(4, Math.floor((width + 10) / 250)));
 }
 
 function MasonryBoard({
@@ -163,17 +172,17 @@ function MasonryBoard({
   onEdit?: (entry: Entry) => void;
 }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [columns, setColumns] = useState(() => Math.max(1, Math.min(works.length, 4)));
+  const [columns, setColumns] = useState(4);
 
   useEffect(() => {
     const board = boardRef.current;
     if (!board) return;
-    const resize = () => setColumns(columnCount(board.clientWidth, works.length));
+    const resize = () => setColumns(columnCount(board.clientWidth));
     resize();
     const observer = new ResizeObserver(resize);
     observer.observe(board);
     return () => observer.disconnect();
-  }, [works.length]);
+  }, []);
 
   const groups = useMemo(() => {
     const next = Array.from({ length: columns }, () => [] as typeof works);
@@ -181,7 +190,8 @@ function MasonryBoard({
     for (const item of works) {
       const shortest = heights.indexOf(Math.min(...heights));
       next[shortest].push(item);
-      heights[shortest] += item.entry.height / item.entry.width + 0.1;
+      heights[shortest] +=
+        1 / Math.max(0.75, Math.min(2.5, item.entry.width / item.entry.height)) + 0.1;
     }
     return next;
   }, [columns, works]);
@@ -190,14 +200,8 @@ function MasonryBoard({
     <div ref={boardRef} className="feed-board" data-layout="masonry" data-columns={columns}>
       {groups.map((group, column) => (
         <div className="masonry-column" key={column}>
-          {group.map((item, index) => (
-            <ArtworkCard
-              item={item}
-              index={index}
-              onOpen={onOpen}
-              onEdit={onEdit}
-              key={item.entry.id}
-            />
+          {group.map((item) => (
+            <ArtworkCard item={item} onOpen={onOpen} onEdit={onEdit} key={item.entry.id} />
           ))}
         </div>
       ))}
@@ -222,14 +226,8 @@ function ArtworkBoard({
 
   return (
     <div className="feed-board">
-      {works.map((item, index) => (
-        <ArtworkCard
-          item={item}
-          index={index}
-          onOpen={onOpen}
-          onEdit={onEdit}
-          key={item.entry.id}
-        />
+      {works.map((item) => (
+        <ArtworkCard item={item} onOpen={onOpen} onEdit={onEdit} key={item.entry.id} />
       ))}
     </div>
   );
@@ -271,6 +269,7 @@ export function ArtworkGrid({
       })
       .sort((left, right) => {
         const difference =
+          entryDate(right.entry).localeCompare(entryDate(left.entry)) ||
           new Date(right.entry.createdAt).getTime() - new Date(left.entry.createdAt).getTime();
         return sort === "newest" ? difference : -difference;
       });
@@ -283,11 +282,10 @@ export function ArtworkGrid({
     }> = [];
 
     for (const work of visibleWorks) {
-      const date = new Date(work.entry.createdAt);
-      const key = calendarDateKey(date);
+      const key = entryDate(work.entry);
       const current = groups.at(-1);
       if (current?.key === key) current.works.push(work);
-      else groups.push({ key, label: calendarDateLabel(date), works: [work] });
+      else groups.push({ key, label: calendarDateLabel(key), works: [work] });
     }
 
     return groups;
@@ -351,8 +349,24 @@ export function ArtworkGrid({
       ) : (
         <div className="work-grid-empty" role="status">
           <img src="/pixel.svg" alt="" />
-          <strong>nothing found</strong>
-          <span>try another search</span>
+          <strong>{works.length === 0 ? "No public works yet" : "No matching works"}</strong>
+          <span>
+            {works.length === 0
+              ? "Public works will appear here"
+              : "Try another search or clear your filters"}
+          </span>
+          {works.length > 0 && (
+            <button
+              className="button"
+              type="button"
+              onClick={() => {
+                setQuery("");
+                setVisibility("all");
+              }}
+            >
+              clear filters
+            </button>
+          )}
         </div>
       )}
     </>

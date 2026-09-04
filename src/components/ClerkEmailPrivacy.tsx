@@ -2,7 +2,8 @@ import { useEffect } from "react";
 
 const EMAIL_PATTERN = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/gi;
 const originalEmails = new WeakMap<HTMLElement, string>();
-const revealedEmails = new WeakSet<HTMLElement>();
+const CLERK_ROOTS =
+  ".cl-userButtonPopoverCard, .cl-userProfile-root, .cl-signIn-root, .cl-signUp-root";
 
 function privateEmail(email: string) {
   let hash = 0;
@@ -30,7 +31,6 @@ function revealEmail(element: HTMLElement) {
   const email = originalEmails.get(element);
   if (!email) return;
 
-  revealedEmails.add(element);
   element.textContent = email;
   element.classList.remove("clerk-email-private");
   element.classList.add("clerk-email-revealed");
@@ -122,7 +122,9 @@ export function ClerkEmailPrivacy() {
     let animationFrame = 0;
     const scan = () => {
       cancelAnimationFrame(animationFrame);
-      animationFrame = requestAnimationFrame(() => maskEmails(document.body));
+      animationFrame = requestAnimationFrame(() => {
+        for (const root of document.querySelectorAll(CLERK_ROOTS)) maskEmails(root);
+      });
     };
     const revealFromEvent = (target: EventTarget | null) => {
       if (!(target instanceof Element)) return false;
@@ -144,7 +146,19 @@ export function ClerkEmailPrivacy() {
     };
 
     scan();
-    const observer = new MutationObserver(scan);
+    const observer = new MutationObserver((records) => {
+      const changed = records.some((record) => {
+        const parent =
+          record.target instanceof Element ? record.target : record.target.parentElement;
+        if (parent?.closest(CLERK_ROOTS)) return true;
+        return Array.from(record.addedNodes).some(
+          (node) =>
+            node instanceof Element &&
+            (node.matches(CLERK_ROOTS) || node.querySelector(CLERK_ROOTS)),
+        );
+      });
+      if (changed) scan();
+    });
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
     document.addEventListener("click", handleClick, true);
     document.addEventListener("keydown", handleKeyDown, true);

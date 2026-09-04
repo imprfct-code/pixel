@@ -30,6 +30,7 @@ export interface Entry {
   fileSize: number;
   visibility: Visibility;
   createdAt: string;
+  practiceDate?: string;
   imageUrl: string;
 }
 
@@ -38,11 +39,13 @@ export interface UploadInput {
   title?: string;
   note?: string;
   visibility: Visibility;
+  practiceDate: string;
   width: number;
   height: number;
 }
 
 export interface EntryUpdateInput {
+  practiceDate: string;
   title?: string;
   note?: string;
   visibility: Visibility;

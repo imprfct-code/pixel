@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/react";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery, useQuery } from "convex/react";
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { api } from "../../convex/_generated/api";
@@ -45,7 +45,11 @@ function FeedSkeleton() {
 export function FeedScreen() {
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
-  const works = useQuery(api.entries.feed);
+  const {
+    results: works,
+    status,
+    loadMore,
+  } = usePaginatedQuery(api.entries.feed, {}, { initialNumItems: 24 });
   const currentUser = useQuery(api.users.current, isSignedIn ? {} : "skip");
   const mine = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const upload = usePixelUpload();
@@ -74,7 +78,7 @@ export function FeedScreen() {
           <ProfileShortcut />
         </header>
         <main className="page-shell feed-page">
-          {works === undefined ? (
+          {status === "LoadingFirstPage" ? (
             <FeedSkeleton />
           ) : (
             <ArtworkGrid
@@ -92,6 +96,18 @@ export function FeedScreen() {
               }
               controls={false}
             />
+          )}
+          {(status === "CanLoadMore" || status === "LoadingMore") && (
+            <div className="feed-pagination">
+              <button
+                className="button"
+                type="button"
+                disabled={status === "LoadingMore"}
+                onClick={() => loadMore(24)}
+              >
+                {status === "LoadingMore" ? "loading works…" : "load more works"}
+              </button>
+            </div>
           )}
         </main>
         <SiteFooter />

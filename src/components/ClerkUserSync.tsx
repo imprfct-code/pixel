@@ -1,37 +1,47 @@
 import { useUser } from "@clerk/react";
-import { useMutation, useQuery } from "convex/react";
-import { useEffect, useRef } from "react";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { api } from "../../convex/_generated/api";
 
-export function ClerkUserSync() {
-  const { isSignedIn, user } = useUser();
-  const currentUser = useQuery(api.users.current, isSignedIn ? {} : "skip");
+export function ClerkUserSync({ children }: { children: ReactNode }) {
+  const { user } = useUser();
+  const { isAuthenticated } = useConvexAuth();
+  const currentUser = useQuery(api.users.current, isAuthenticated ? {} : "skip");
   const ensureUser = useMutation(api.users.getOrCreate);
   const saveAvatar = useMutation(api.users.updateAvatar);
-  const provisioning = useRef(false);
+  const [attempt, setAttempt] = useState(0);
+  const [failedUser, setFailedUser] = useState<string>();
   const activeAvatar = useRef<string>(undefined);
   const pendingAvatar = useRef<string>(undefined);
   const clerkAvatarUrl = user?.imageUrl;
   const savedAvatarUrl = currentUser?.avatarUrl;
 
-  useEffect(() => {
-    if (!user || currentUser !== null || provisioning.current) return;
+  const userId = user?.id;
+  const username =
+    user?.username ??
+    user?.primaryEmailAddress?.emailAddress.split("@")[0] ??
+    `artist-${userId?.slice(-6)}`;
+  const displayName = user?.fullName ?? undefined;
 
-    provisioning.current = true;
-    const emailName = user.primaryEmailAddress?.emailAddress.split("@")[0];
-    void ensureUser({
-      username: user.username ?? emailName ?? `artist-${user.id.slice(-6)}`,
-      displayName: user.fullName ?? undefined,
-      avatarUrl: user.imageUrl,
-    }).then(
-      () => {
-        provisioning.current = false;
-      },
-      () => {
-        provisioning.current = false;
-      },
-    );
-  }, [currentUser, ensureUser, user]);
+  useEffect(() => {
+    if (!userId || !isAuthenticated || currentUser !== null) return;
+    let cancelled = false;
+    void ensureUser({ username, displayName, avatarUrl: clerkAvatarUrl }).catch(() => {
+      if (!cancelled) setFailedUser(userId);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    userId,
+    username,
+    displayName,
+    clerkAvatarUrl,
+    isAuthenticated,
+    currentUser,
+    ensureUser,
+    attempt,
+  ]);
 
   useEffect(() => {
     if (!clerkAvatarUrl || !currentUser || savedAvatarUrl === clerkAvatarUrl) return;
@@ -63,5 +73,23 @@ export function ClerkUserSync() {
     return () => clearTimeout(stableTimer);
   }, [clerkAvatarUrl, currentUser, saveAvatar, savedAvatarUrl]);
 
-  return null;
+  if (userId && failedUser === userId && currentUser === null) {
+    return (
+      <main className="setup-page" role="alert">
+        <h1>Could not prepare your profile</h1>
+        <p>Check your connection, then try again. Your account is safe.</p>
+        <button
+          className="button"
+          type="button"
+          onClick={() => {
+            setFailedUser(undefined);
+            setAttempt((value) => value + 1);
+          }}
+        >
+          try again
+        </button>
+      </main>
+    );
+  }
+  return children;
 }

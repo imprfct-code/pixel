@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import type { Entry } from "../../shared/pixel";
-import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
+import { calendarDateKey, calendarDateLabel, entryDate } from "../lib/calendar";
 
 export function Heatmap({
   entries,
@@ -11,7 +11,26 @@ export function Heatmap({
   selectedDate?: string;
   onSelectDate?: (date?: string) => void;
 }) {
-  const { weeks, total, activeDays, year } = useMemo(() => buildYear(entries), [entries]);
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const year = selectedDate ? Number(selectedDate.slice(0, 4)) : selectedYear;
+  const years = [
+    ...new Set([
+      currentYear,
+      year,
+      ...entries.map((entry) => Number(entryDate(entry).slice(0, 4))),
+    ]),
+  ].sort((a, b) => b - a);
+  const { weeks, total, activeDays } = useMemo(() => buildYear(entries, year), [entries, year]);
+  const focusDate =
+    selectedDate ??
+    (year === currentYear
+      ? calendarDateKey(new Date())
+      : entries
+          .map(entryDate)
+          .filter((date) => date.startsWith(String(year)))
+          .sort()
+          .at(-1));
   const { showCell, resetCells, moveToCell } = useHeatmapLens();
   const lensRef = useRef<HTMLDivElement>(null);
 
@@ -25,9 +44,7 @@ export function Heatmap({
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         if (!window.matchMedia("(max-width: 760px)").matches) return;
-        const today = lens.querySelector<HTMLElement>(
-          `[data-date="${calendarDateKey(new Date())}"]`,
-        );
+        const today = lens.querySelector<HTMLElement>(`[data-date="${focusDate}"]`);
         const week = today?.parentElement;
         if (!week) return;
         lens.scrollLeft = Math.max(
@@ -47,14 +64,30 @@ export function Heatmap({
       observer.disconnect();
       window.removeEventListener("resize", alignToday);
     };
-  }, [entries.length, year]);
+  }, [focusDate]);
 
   return (
     <section className="heatmap-section" aria-labelledby="practice-heading">
       <div className="heatmap-heading">
         <span id="practice-heading">
-          {total} pieces / {activeDays} days / {year}
+          {total} {total === 1 ? "piece" : "pieces"} / {activeDays}{" "}
+          {activeDays === 1 ? "day" : "days"}
         </span>
+        <select
+          className="heatmap-year"
+          aria-label="Practice year"
+          value={year}
+          onChange={(event) => {
+            setSelectedYear(Number(event.target.value));
+            onSelectDate?.(undefined);
+          }}
+        >
+          {years.map((value) => (
+            <option key={value} value={value}>
+              {value}
+            </option>
+          ))}
+        </select>
         {selectedDate && (
           <span className="heatmap-mobile-state">{calendarDateLabel(selectedDate)}</span>
         )}
@@ -80,7 +113,7 @@ export function Heatmap({
           <div
             className="heatmap-grid"
             role="group"
-            aria-label={`${activeDays} practice days in ${year}`}
+            aria-label={`${activeDays} practice ${activeDays === 1 ? "day" : "days"} in ${year}`}
           >
             {weeks.map((week, weekIndex) => (
               <div className="heatmap-week" key={weekIndex}>
@@ -198,14 +231,13 @@ function useHeatmapLens() {
   return { showCell, resetCells, moveToCell };
 }
 
-function buildYear(entries: Entry[]) {
+function buildYear(entries: Entry[], year: number) {
   const now = new Date();
   const today = calendarDateKey(now);
-  const year = now.getFullYear();
   const counts = new Map<string, number>();
 
   for (const entry of entries) {
-    const date = calendarDateKey(entry.createdAt);
+    const date = entryDate(entry);
     if (!date.startsWith(String(year))) continue;
     counts.set(date, (counts.get(date) ?? 0) + 1);
   }

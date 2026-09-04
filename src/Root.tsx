@@ -1,6 +1,7 @@
 import { ClerkLoaded, ClerkLoading, ClerkProvider, Show, useAuth } from "@clerk/react";
 import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { useState } from "react";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
 import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
@@ -246,7 +247,11 @@ function ProtectedPixel() {
 
 export function Root({ convexUrl, clerkKey }: { convexUrl?: string; clerkKey?: string }) {
   if (!convexUrl || !clerkKey) return <SetupScreen />;
+  return <ConfiguredRoot key={convexUrl} convexUrl={convexUrl} clerkKey={clerkKey} />;
+}
 
+function ConfiguredRoot({ convexUrl, clerkKey }: { convexUrl: string; clerkKey: string }) {
+  const [client] = useState(() => new ConvexReactClient(convexUrl));
   return (
     <ClerkProvider
       publishableKey={clerkKey}
@@ -254,10 +259,11 @@ export function Root({ convexUrl, clerkKey }: { convexUrl?: string; clerkKey?: s
       signUpUrl="/sign-up"
       appearance={CLERK_APPEARANCE}
     >
-      <ConvexProviderWithClerk client={new ConvexReactClient(convexUrl)} useAuth={useAuth}>
-        <ClerkUserSync />
+      <ConvexProviderWithClerk client={client} useAuth={useAuth}>
         <ClerkEmailPrivacy />
-        <ConfiguredPixel />
+        <ClerkUserSync>
+          <ConfiguredPixel />
+        </ClerkUserSync>
       </ConvexProviderWithClerk>
     </ClerkProvider>
   );

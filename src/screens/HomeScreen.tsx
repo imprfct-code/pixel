@@ -6,10 +6,10 @@ import { ArtworkGrid } from "../components/ArtworkGrid";
 import { AvatarLightbox } from "../components/AvatarLightbox";
 import { Heatmap } from "../components/Heatmap";
 import { InlineProfileField } from "../components/InlineProfileField";
-import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
+import { entryDate, calendarDateLabel } from "../lib/calendar";
 
 function practiceDays(entries: Entry[]) {
-  return new Set(entries.map((entry) => entry.createdAt.slice(0, 10))).size;
+  return new Set(entries.map((entry) => entryDate(entry))).size;
 }
 
 export function HomeScreen({
@@ -31,9 +31,12 @@ export function HomeScreen({
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>();
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const since = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
-    .format(new Date(user.practiceStartedAt))
-    .toLowerCase();
+  const firstWorkDate = entries.map(entryDate).sort()[0];
+  const since = firstWorkDate
+    ? new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
+        .format(new Date(`${firstWorkDate}T00:00:00`))
+        .toLowerCase()
+    : "—";
   const profile = {
     username: user.username,
     displayName: user.displayName ?? "",
@@ -41,11 +44,11 @@ export function HomeScreen({
     website: user.website ?? "",
   };
   const activeDate =
-    selectedDate && entries.some((entry) => calendarDateKey(entry.createdAt) === selectedDate)
+    selectedDate && entries.some((entry) => entryDate(entry) === selectedDate)
       ? selectedDate
       : undefined;
   const visibleEntries = activeDate
-    ? entries.filter((entry) => calendarDateKey(entry.createdAt) === activeDate)
+    ? entries.filter((entry) => entryDate(entry) === activeDate)
     : entries;
 
   function saveField(field: keyof ProfileInput, value: string) {
@@ -208,7 +211,19 @@ export function HomeScreen({
             />
           </>
         ) : (
-          <p className="profile-gallery-empty">No works yet</p>
+          <div className="work-grid-empty">
+            <strong>{editable ? "Your practice starts here" : "No public works yet"}</strong>
+            <span>
+              {editable
+                ? "Save a study, a sketch, or a finished piece"
+                : "This artist has not shared any works yet"}
+            </span>
+            {editable && (
+              <button className="button" type="button" onClick={() => void navigate("/upload")}>
+                add your first work
+              </button>
+            )}
+          </div>
         )}
       </section>
       {avatarOpen && (

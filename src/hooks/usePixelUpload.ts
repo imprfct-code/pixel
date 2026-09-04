@@ -14,6 +14,7 @@ export function usePixelUpload() {
       height: input.height,
       fileSize: input.file.size,
       title: input.title,
+      practiceDate: input.practiceDate,
       note: input.note,
       visibility: input.visibility,
     });
@@ -25,9 +26,9 @@ export function usePixelUpload() {
         body: input.file,
       });
     } catch {
-      throw new Error("R2 upload is blocked. Check the bucket CORS policy");
+      throw new Error("Could not upload the image. Check your connection and try again.");
     }
-    if (!response.ok) throw new Error("R2 rejected the upload");
+    if (!response.ok) throw new Error("Could not save the image. Please try again.");
     await finalizeUpload({ entryId });
     return entryId;
   };

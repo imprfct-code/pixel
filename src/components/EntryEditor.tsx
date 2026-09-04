@@ -1,5 +1,6 @@
 import { Trash2, X } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { calendarDateKey, entryDate } from "../lib/calendar";
 import type { Entry, EntryUpdateInput } from "../../shared/pixel";
 
 export function EntryEditor({
@@ -14,6 +15,7 @@ export function EntryEditor({
   onClose: () => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const [practiceDate, setPracticeDate] = useState(entryDate(entry));
   const [title, setTitle] = useState(entry.title ?? "");
   const [note, setNote] = useState(entry.note ?? "");
   const [visibility, setVisibility] = useState(entry.visibility);
@@ -31,6 +33,7 @@ export function EntryEditor({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (saving) return;
     setSaving(true);
     setError("");
     try {
@@ -38,6 +41,7 @@ export function EntryEditor({
         title: title.trim() || undefined,
         note: note.trim() || undefined,
         visibility,
+        practiceDate,
       });
       onClose();
     } catch (caught) {
@@ -69,10 +73,10 @@ export function EntryEditor({
       aria-labelledby="entry-editor-title"
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!saving) onClose();
       }}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget && !saving) onClose();
       }}
     >
       <form className="entry-editor" onSubmit={submit}>
@@ -81,11 +85,21 @@ export function EntryEditor({
             <p className="eyebrow">work</p>
             <h2 id="entry-editor-title">Edit artwork</h2>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close work editor">
+          <button type="button" onClick={onClose} disabled={saving} aria-label="Close work editor">
             <X size={17} />
           </button>
         </header>
-        <div className="entry-editor-body form-fields">
+        <fieldset disabled={saving} className="entry-editor-body form-fields">
+          <label>
+            work date
+            <input
+              type="date"
+              required
+              max={calendarDateKey(new Date())}
+              value={practiceDate}
+              onChange={(event) => setPracticeDate(event.target.value)}
+            />
+          </label>
           <label>
             title <span>optional</span>
             <input
@@ -111,6 +125,7 @@ export function EntryEditor({
                   key={option}
                   type="button"
                   data-active={visibility === option}
+                  aria-pressed={visibility === option}
                   onClick={() => setVisibility(option)}
                 >
                   {option}
@@ -129,14 +144,14 @@ export function EntryEditor({
               <Trash2 size={14} /> {confirmDelete ? "confirm delete" : "delete"}
             </button>
             <span />
-            <button className="button" type="button" onClick={onClose}>
+            <button className="button" type="button" onClick={onClose} disabled={saving}>
               cancel
             </button>
             <button className="button primary" type="submit" disabled={saving}>
               {saving ? "saving" : "save changes"}
             </button>
           </div>
-        </div>
+        </fieldset>
       </form>
     </dialog>
   );

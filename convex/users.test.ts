@@ -26,8 +26,8 @@ describe("users", () => {
 
     expect(firstId).toBe(secondId);
     expect(first?.username).toBe("pixelartist");
-    expect(second?.username).toBe("pixel_artist");
-    expect(second?.displayName).toBe("New Name");
+    expect(second?.username).toBe("pixelartist");
+    expect(second?.displayName).toBe("First Name");
     expect(second?.practiceStartedAt).toBe(first?.practiceStartedAt);
   });
 
@@ -93,6 +93,8 @@ describe("users", () => {
       avatarUrl: "https://images.pixel.test/avatar.png",
     });
     expect(profile?.entries).toEqual([]);
-    expect(await base.query(api.entries.feed)).toEqual([]);
+    expect(
+      (await base.query(api.entries.feed, { paginationOpts: { numItems: 24, cursor: null } })).page,
+    ).toEqual([]);
   });
 });

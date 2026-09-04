@@ -34,18 +34,10 @@ export const getOrCreate = mutation({
       .query("users")
       .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
       .unique();
+    if (existing) return existing._id;
     const username = cleanUsername(args.username);
     const displayName = cleanOptional(args.displayName, 80);
     const owner = await usernameOwner(ctx, username);
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        username: owner && owner._id !== existing._id ? existing.username : username,
-        displayName,
-        avatarUrl: args.avatarUrl,
-      });
-      return existing._id;
-    }
 
     const availableUsername = owner
       ? `${username.slice(0, 25)}-${identity.subject.slice(-6).toLowerCase()}`
