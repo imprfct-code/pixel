@@ -3,7 +3,6 @@ import {
   ArrowUp,
   Check,
   Download,
-  ExternalLink,
   MoreHorizontal,
   Pencil,
   Search,
@@ -117,15 +116,6 @@ function ArtworkCard({
           </button>
           {menuOpen && (
             <div>
-              <button
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onOpen(entry);
-                }}
-              >
-                <ExternalLink size={12} /> open
-              </button>
               {canEdit && onEdit && (
                 <button
                   type="button"
