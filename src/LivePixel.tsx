@@ -1,6 +1,6 @@
 import { useUser, UserButton } from "@clerk/react";
 import { useMutation, useQuery } from "convex/react";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { api } from "../convex/_generated/api";
 import type { Entry, ProfileInput, UserSummary } from "../shared/pixel";
 import { PixelApp } from "./App";
@@ -12,6 +12,7 @@ export function LivePixel() {
   const ensureUser = useMutation(api.users.getOrCreate);
   const saveProfile = useMutation(api.users.updateProfile);
   const saveAvatar = useMutation(api.users.updateAvatar);
+  const syncingAvatar = useRef<string>(undefined);
   const entries = useQuery(api.entries.listMine, currentUser ? {} : "skip");
   const upload = usePixelUpload();
 
@@ -25,10 +26,18 @@ export function LivePixel() {
     });
   }, [clerkUser, currentUser, ensureUser]);
 
+  const clerkAvatarUrl = clerkUser?.imageUrl;
+  const savedAvatarUrl = currentUser?.avatarUrl;
+
   useEffect(() => {
-    if (!clerkUser || !currentUser || currentUser.avatarUrl === clerkUser.imageUrl) return;
-    void saveAvatar({ avatarUrl: clerkUser.imageUrl });
-  }, [clerkUser, currentUser, saveAvatar]);
+    if (!clerkAvatarUrl || !currentUser || savedAvatarUrl === clerkAvatarUrl) return;
+    if (syncingAvatar.current === clerkAvatarUrl) return;
+
+    syncingAvatar.current = clerkAvatarUrl;
+    void saveAvatar({ avatarUrl: clerkAvatarUrl }).finally(() => {
+      if (syncingAvatar.current === clerkAvatarUrl) syncingAvatar.current = undefined;
+    });
+  }, [clerkAvatarUrl, currentUser, saveAvatar, savedAvatarUrl]);
 
   if (!currentUser) return <p className="status-message full-page">loading</p>;
 
@@ -39,7 +48,7 @@ export function LivePixel() {
     bio: currentUser.bio ?? null,
     website: currentUser.website ?? null,
     practiceStartedAt: new Date(currentUser.practiceStartedAt).toISOString(),
-    avatarUrl: currentUser.avatarUrl ?? clerkUser?.imageUrl ?? "/avatar.png",
+    avatarUrl: clerkAvatarUrl ?? currentUser.avatarUrl ?? "/avatar.png",
   };
 
   async function updateProfile(input: ProfileInput) {
@@ -50,7 +59,6 @@ export function LivePixel() {
     if (!clerkUser) throw new Error("User not loaded");
     await clerkUser.setProfileImage({ file });
     await clerkUser.reload();
-    await saveAvatar({ avatarUrl: clerkUser.imageUrl });
   }
 
   return (

@@ -3,6 +3,7 @@ import { Authenticated, AuthLoading, ConvexReactClient, Unauthenticated } from "
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { Navigate, Route, Routes } from "react-router";
 import { AuthScreen } from "./AuthScreen";
+import { ClerkEmailPrivacy } from "./components/ClerkEmailPrivacy";
 import { LivePixel } from "./LivePixel";
 import { FeedScreen } from "./screens/FeedScreen";
 import { PublicProfileScreen } from "./screens/PublicProfileScreen";
@@ -42,6 +43,12 @@ const CLERK_APPEARANCE = {
       backgroundColor: "#0d0d0d",
       boxShadow: "none",
     },
+    avatarBox: {
+      borderRadius: "0px",
+    },
+    avatarImage: {
+      borderRadius: "0px",
+    },
     popoverBox: {
       borderRadius: "0px",
     },
@@ -54,10 +61,10 @@ const CLERK_APPEARANCE = {
       boxShadow: "0 22px 64px rgba(0, 0, 0, 0.68)",
     },
     userButtonPopoverMain: {
-      padding: "10px",
+      padding: "8px",
     },
     userPreview: {
-      gap: "10px",
+      gap: "8px",
       padding: "0",
     },
     userPreviewSecondaryIdentifier: {
@@ -67,14 +74,19 @@ const CLERK_APPEARANCE = {
       padding: "0",
     },
     userButtonPopoverActionButton: {
+      width: "100%",
       minHeight: "38px",
-      gap: "10px",
-      padding: "8px 10px",
+      justifyContent: "flex-start",
+      gap: "8px",
+      padding: "8px",
       borderTop: "1px solid #242424",
       borderRadius: "0px",
       color: "#d2d2d2",
+      textAlign: "left",
     },
     userButtonPopoverActionButtonIcon: {
+      flex: "none",
+      margin: "0",
       color: "#b8b8b8",
     },
     userButtonPopoverFooter: {
@@ -227,6 +239,7 @@ export function Root({ convexUrl, clerkKey }: { convexUrl?: string; clerkKey?: s
       appearance={CLERK_APPEARANCE}
     >
       <ConvexProviderWithClerk client={new ConvexReactClient(convexUrl)} useAuth={useAuth}>
+        <ClerkEmailPrivacy />
         <ConfiguredPixel />
       </ConvexProviderWithClerk>
     </ClerkProvider>

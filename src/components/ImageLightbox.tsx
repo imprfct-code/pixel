@@ -44,6 +44,8 @@ export function ImageLightbox({
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchDistanceRef = useRef<number>(undefined);
   const zoomAnchorRef = useRef<
     | {
         clientX: number;
@@ -156,6 +158,17 @@ export function ImageLightbox({
   function startPan(event: PointerEvent<HTMLDivElement>) {
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const canvas = event.currentTarget;
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    canvas.setPointerCapture(event.pointerId);
+
+    if (pointersRef.current.size > 1) {
+      const [first, second] = [...pointersRef.current.values()];
+      pinchDistanceRef.current = Math.hypot(second.x - first.x, second.y - first.y);
+      dragRef.current.pointerId = -1;
+      setDragging(false);
+      return;
+    }
+
     dragRef.current = {
       pointerId: event.pointerId,
       x: event.clientX,
@@ -163,11 +176,24 @@ export function ImageLightbox({
       left: canvas.scrollLeft,
       top: canvas.scrollTop,
     };
-    canvas.setPointerCapture(event.pointerId);
     setDragging(true);
   }
 
   function pan(event: PointerEvent<HTMLDivElement>) {
+    if (!pointersRef.current.has(event.pointerId)) return;
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+
+    if (pointersRef.current.size > 1) {
+      const [first, second] = [...pointersRef.current.values()];
+      const distance = Math.hypot(second.x - first.x, second.y - first.y);
+      const previousDistance = pinchDistanceRef.current;
+      pinchDistanceRef.current = distance;
+      if (previousDistance && distance > 0) {
+        changeZoom(distance / previousDistance, (first.x + second.x) / 2, (first.y + second.y) / 2);
+      }
+      return;
+    }
+
     const start = dragRef.current;
     if (start.pointerId !== event.pointerId) return;
     event.currentTarget.scrollLeft = start.left - (event.clientX - start.x);
@@ -175,11 +201,27 @@ export function ImageLightbox({
   }
 
   function stopPan(event: PointerEvent<HTMLDivElement>) {
-    if (dragRef.current.pointerId !== event.pointerId) return;
-    dragRef.current.pointerId = -1;
+    pointersRef.current.delete(event.pointerId);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+
+    pinchDistanceRef.current = undefined;
+    const remaining = pointersRef.current.entries().next().value;
+    if (remaining) {
+      const [pointerId, point] = remaining;
+      dragRef.current = {
+        pointerId,
+        x: point.x,
+        y: point.y,
+        left: event.currentTarget.scrollLeft,
+        top: event.currentTarget.scrollTop,
+      };
+      setDragging(true);
+      return;
+    }
+
+    dragRef.current.pointerId = -1;
     setDragging(false);
   }
 

@@ -186,3 +186,29 @@
     font-size: 25px;
   }
 }
+
+.clerk-email-private {
+  cursor: pointer;
+  filter: blur(4px);
+  user-select: none;
+  transition: filter 120ms ease;
+}
+.clerk-email-private:hover,
+.clerk-email-private:focus-visible {
+  outline: none;
+  filter: blur(3px);
+}
+.clerk-email-revealed {
+  filter: none;
+}
+.cl-profileSection__danger .cl-profileSectionHeader,
+.cl-profileSection__danger .cl-profileSectionTitle {
+  display: none;
+}
+.cl-profileSection__danger .cl-profileSectionContent,
+.cl-profileSection__danger .cl-profileSectionItem {
+  display: block;
+}
+.cl-profileSection__danger .cl-profileSectionPrimaryButton {
+  margin-left: 0;
+}
