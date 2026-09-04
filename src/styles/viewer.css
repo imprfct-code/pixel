@@ -19,6 +19,12 @@
 .viewer-heading > .visibility {
   justify-self: end;
 }
+.viewer-entry-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -86,6 +92,57 @@
   color: #898989;
   font-size: 11px;
   line-height: 1.8;
+}
+
+.entry-editor-dialog {
+  width: min(560px, calc(100% - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid #343434;
+  background: #0c0c0c;
+  color: #e8e8e8;
+  box-shadow: 0 32px 120px rgba(0, 0, 0, 0.72);
+}
+.entry-editor-dialog::backdrop {
+  background: rgba(5, 5, 5, 0.82);
+  backdrop-filter: blur(7px);
+}
+.entry-editor > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 19px 22px;
+  border-bottom: 1px solid #282828;
+}
+.entry-editor > header h2 {
+  margin-top: 5px;
+  font-size: 20px;
+  text-transform: none;
+}
+.entry-editor > header > button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #333;
+  background: #111;
+}
+.entry-editor-body {
+  padding: 22px;
+}
+.entry-editor-actions {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: 8px;
+}
+.button.danger {
+  border-color: #552f31;
+  color: #c7787a;
+}
+.button.danger:hover {
+  border-color: #a05256;
+  color: #e89a9d;
 }
 
 .status-message {
@@ -173,6 +230,8 @@
 }
 .lightbox-canvas {
   overflow: auto;
+  scrollbar-color: #555 #0d0d0d;
+  scrollbar-width: thin;
   background-color: #0d0d0d;
   background-image:
     linear-gradient(45deg, #151515 25%, transparent 25%),
@@ -186,6 +245,22 @@
     8px -8px,
     -8px 0;
   overscroll-behavior: contain;
+}
+.lightbox-canvas::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+.lightbox-canvas::-webkit-scrollbar-track,
+.lightbox-canvas::-webkit-scrollbar-corner {
+  background: #0d0d0d;
+}
+.lightbox-canvas::-webkit-scrollbar-thumb {
+  border: 3px solid #0d0d0d;
+  border-radius: 8px;
+  background: #4a4a4a;
+}
+.lightbox-canvas::-webkit-scrollbar-thumb:hover {
+  background: #686868;
 }
 .lightbox-image-wrap {
   display: grid;

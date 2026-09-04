@@ -1,22 +1,19 @@
 import { UploadCloud, X } from "lucide-react";
 import { useEffect, useRef, useState, type DragEvent, type ReactNode } from "react";
-import { useNavigate } from "react-router";
-import type { UploadInput } from "../../shared/pixel";
-import { readImageSize, validateImageFile } from "../lib/image";
+import { validateImageFile } from "../lib/image";
 
-type DropStatus = "idle" | "ready" | "reading" | "uploading" | "done" | "error";
+type DropStatus = "idle" | "ready" | "error";
 
 export function GlobalDrop({
   children,
-  onUpload,
+  onSelectFiles,
 }: {
   children: ReactNode;
-  onUpload: (input: UploadInput) => Promise<string>;
+  onSelectFiles: (files: File[]) => void;
 }) {
-  const navigate = useNavigate();
   const depth = useRef(0);
   const [status, setStatus] = useState<DropStatus>("idle");
-  const [message, setMessage] = useState("Drop to upload");
+  const [message, setMessage] = useState("Drop to create entries");
 
   useEffect(() => {
     const context = document.modelContext;
@@ -31,7 +28,7 @@ export function GlobalDrop({
           inputSchema: { type: "object", properties: {}, additionalProperties: false },
           annotations: { readOnlyHint: true, untrustedContentHint: false },
           execute() {
-            void navigate("/upload");
+            onSelectFiles([]);
             return { path: "/upload" };
           },
         },
@@ -39,7 +36,7 @@ export function GlobalDrop({
       ),
     ).catch(() => undefined);
     return () => lifecycle.abort();
-  }, [navigate]);
+  }, [onSelectFiles]);
 
   function isExcluded(event: DragEvent) {
     return event.target instanceof Element && Boolean(event.target.closest("[data-drop-exclude]"));
@@ -49,7 +46,8 @@ export function GlobalDrop({
     if (!event.dataTransfer.types.includes("Files") || isExcluded(event)) return;
     event.preventDefault();
     depth.current += 1;
-    setMessage("Drop to upload");
+    const count = event.dataTransfer.items.length;
+    setMessage(count > 1 ? `Drop ${count} files to create entries` : "Drop to create an entry");
     setStatus("ready");
   }
 
@@ -72,28 +70,15 @@ export function GlobalDrop({
       setStatus("idle");
       return;
     }
-    const file = event.dataTransfer.files[0];
-    if (file) void quickUpload(file);
-  }
-
-  async function quickUpload(file: File) {
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length === 0) {
+      setStatus("idle");
+      return;
+    }
     try {
-      validateImageFile(file);
-      setMessage(file.name);
-      setStatus("reading");
-      const dimensions = await readImageSize(file);
-      setStatus("uploading");
-      const entryId = await onUpload({
-        file,
-        ...dimensions,
-        visibility: "private",
-        milestone: false,
-      });
-      setStatus("done");
-      window.setTimeout(() => {
-        setStatus("idle");
-        void navigate(`/entries/${entryId}`);
-      }, 350);
+      files.forEach(validateImageFile);
+      setStatus("idle");
+      onSelectFiles(files);
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : "Upload failed");
       setStatus("error");
@@ -112,7 +97,7 @@ export function GlobalDrop({
         <div className="global-drop" data-state={status} aria-live="polite">
           <div className="global-drop-panel">
             <UploadCloud size={28} strokeWidth={1.4} />
-            <strong>{status === "done" ? "Uploaded" : message}</strong>
+            <strong>{message}</strong>
             <span>{statusLabel(status)}</span>
             <div className="global-drop-progress">
               <i />
@@ -130,10 +115,7 @@ export function GlobalDrop({
 }
 
 function statusLabel(status: DropStatus) {
-  if (status === "ready") return "PNG or GIF / private";
-  if (status === "reading") return "Reading image";
-  if (status === "uploading") return "Uploading";
-  if (status === "done") return "Private entry";
+  if (status === "ready") return "PNG or GIF · one entry per file";
   if (status === "error") return "Try another file";
   return "";
 }

@@ -1,17 +1,30 @@
-import { ArrowLeft, Download, Grid3X3, LockKeyhole, Share2 } from "lucide-react";
+import { ArrowLeft, Download, Grid3X3, LockKeyhole, Pencil, Share2 } from "lucide-react";
 import { useState } from "react";
-import { Link, useParams } from "react-router";
-import type { Entry } from "../../shared/pixel";
+import { Link, useNavigate, useParams } from "react-router";
+import type { Entry, EntryUpdateInput } from "../../shared/pixel";
 import { ArtworkImage } from "../components/ArtworkImage";
+import { EntryEditor } from "../components/EntryEditor";
 import { downloadImage } from "../lib/image";
 
 const SCALES = [1, 2, 4, 8, 16] as const;
 
-export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: boolean }) {
+export function ViewerScreen({
+  entries,
+  loading,
+  onUpdate,
+  onDelete,
+}: {
+  entries: Entry[];
+  loading: boolean;
+  onUpdate: (entryId: string, input: EntryUpdateInput) => Promise<void>;
+  onDelete: (entryId: string) => Promise<void>;
+}) {
   const { entryId } = useParams();
+  const navigate = useNavigate();
   const entry = entries.find((item) => item.id === entryId);
   const [scale, setScale] = useState<(typeof SCALES)[number]>(4);
   const [checker, setChecker] = useState(true);
+  const [editing, setEditing] = useState(false);
 
   if (loading) return <p className="status-message">loading</p>;
   if (!entry) {
@@ -34,10 +47,15 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
         <div>
           <h1>{entry.title ?? entry.originalFilename}</h1>
         </div>
-        <span className="visibility large">
-          {entry.visibility === "private" ? <LockKeyhole size={13} /> : <Share2 size={13} />}
-          {entry.visibility}
-        </span>
+        <div className="viewer-entry-actions">
+          <span className="visibility large">
+            {entry.visibility === "private" ? <LockKeyhole size={13} /> : <Share2 size={13} />}
+            {entry.visibility}
+          </span>
+          <button className="button" type="button" onClick={() => setEditing(true)}>
+            <Pencil size={13} /> edit
+          </button>
+        </div>
       </div>
       <div className={`pixel-stage ${checker ? "checker" : ""}`} data-drop-exclude="true">
         <ArtworkImage
@@ -75,6 +93,17 @@ export function ViewerScreen({ entries, loading }: { entries: Entry[]; loading: 
         </span>
       </div>
       {entry.note && <p className="entry-note">{entry.note}</p>}
+      {editing && (
+        <EntryEditor
+          entry={entry}
+          onClose={() => setEditing(false)}
+          onSave={(input) => onUpdate(entry.id, input)}
+          onDelete={async () => {
+            await onDelete(entry.id);
+            void navigate("/");
+          }}
+        />
+      )}
     </section>
   );
 }

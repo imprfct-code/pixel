@@ -59,6 +59,40 @@ export const getMine = query({
   },
 });
 
+export const updateMine = mutation({
+  args: {
+    entryId: v.id("entries"),
+    title: v.optional(v.string()),
+    note: v.optional(v.string()),
+    visibility,
+    milestone: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const user = await userFromAuth(ctx);
+    const entry = await ctx.db.get("entries", args.entryId);
+    if (!entry || entry.userId !== user._id || entry.status !== "ready") {
+      throw new Error("Entry not found");
+    }
+    await ctx.db.patch(entry._id, {
+      title: optionalText(args.title, 100),
+      note: optionalText(args.note, 500),
+      visibility: args.visibility,
+      milestone: args.milestone,
+    });
+  },
+});
+
+export const removeMine = mutation({
+  args: { entryId: v.id("entries") },
+  handler: async (ctx, { entryId }) => {
+    const user = await userFromAuth(ctx);
+    const entry = await ctx.db.get("entries", entryId);
+    if (!entry || entry.userId !== user._id) throw new Error("Entry not found");
+    await r2.deleteObject(ctx, entry.objectKey);
+    await ctx.db.delete(entry._id);
+  },
+});
+
 export const beginUpload = mutation({
   args: {
     originalFilename: v.string(),

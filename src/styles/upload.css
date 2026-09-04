@@ -50,6 +50,12 @@
   gap: 22px;
   padding: 22px;
 }
+.upload-media-column {
+  display: grid;
+  align-self: start;
+  gap: 10px;
+  min-width: 0;
+}
 .drop-zone {
   position: relative;
   display: grid;
@@ -116,6 +122,57 @@
 .file-caption span {
   color: #666;
 }
+.upload-queue {
+  display: grid;
+  max-height: 150px;
+  gap: 5px;
+  overflow-y: auto;
+  scrollbar-color: #444 #0c0c0c;
+  scrollbar-width: thin;
+}
+.upload-queue > button {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  padding: 3px 8px 3px 3px;
+  border: 1px solid #292929;
+  background: #0d0d0d;
+  color: #777;
+  text-align: left;
+}
+.upload-queue > button[data-active="true"] {
+  border-color: #666;
+  color: #ddd;
+}
+.upload-queue > button img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.upload-queue > button span {
+  overflow: hidden;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-queue > button small {
+  color: #555;
+  font-size: 8px;
+}
+.upload-queue > .add-files {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 8px;
+  border-style: dashed;
+  font-size: 9px;
+  text-align: center;
+}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -126,6 +183,13 @@
 .form-fields {
   display: grid;
   gap: 16px;
+}
+.draft-position {
+  margin: 0 0 -5px;
+  color: var(--rose);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .form-fields label:not(.checkbox),
 fieldset {

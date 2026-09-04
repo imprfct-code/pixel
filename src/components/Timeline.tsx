@@ -90,11 +90,12 @@ export function Timeline({ entries }: { entries: Entry[] }) {
           </button>
         </div>
       </div>
-      <div className="entry-grid">
-        {sortedEntries.map((entry) => (
-          <article className="entry-card" key={entry.id}>
+      <div className="entry-timeline">
+        {sortedEntries.map((entry, index) => (
+          <article className="timeline-entry" key={entry.id}>
+            <span className="timeline-dot" data-latest={index === 0 || undefined} />
             <button
-              className="entry-image"
+              className="timeline-thumbnail"
               type="button"
               onClick={() => setOpenEntry(entry)}
               data-drop-exclude="true"
@@ -102,18 +103,28 @@ export function Timeline({ entries }: { entries: Entry[] }) {
             >
               <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
             </button>
-            <div className="entry-meta">
-              <Link to={`/entries/${entry.id}`}>
-                <strong>{entry.title ?? entry.originalFilename}</strong>
-              </Link>
-              <span>{dateLabel(entry.createdAt)}</span>
-              <span>
-                {entry.width}×{entry.height}
-              </span>
-              <span className="visibility">
-                {entry.visibility === "private" ? <LockKeyhole size={11} /> : <Share2 size={11} />}
-                {entry.visibility}
-              </span>
+            <div className="timeline-entry-copy">
+              <div className="timeline-entry-title">
+                <Link to={`/entries/${entry.id}`}>
+                  <strong>{entry.title ?? entry.originalFilename}</strong>
+                </Link>
+                <time dateTime={entry.createdAt}>{dateLabel(entry.createdAt)}</time>
+              </div>
+              {entry.note && <p>{entry.note}</p>}
+              <div className="timeline-entry-meta">
+                <span>
+                  {entry.width}×{entry.height}
+                </span>
+                <span className="visibility">
+                  {entry.visibility === "private" ? (
+                    <LockKeyhole size={11} />
+                  ) : (
+                    <Share2 size={11} />
+                  )}
+                  {entry.visibility}
+                </span>
+                {entry.milestone && <span className="timeline-milestone">milestone</span>}
+              </div>
             </div>
           </article>
         ))}

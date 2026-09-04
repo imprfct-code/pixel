@@ -43,3 +43,10 @@ export interface UploadInput {
   width: number;
   height: number;
 }
+
+export interface EntryUpdateInput {
+  title?: string;
+  note?: string;
+  visibility: Visibility;
+  milestone: boolean;
+}

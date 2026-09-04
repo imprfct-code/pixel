@@ -1,7 +1,13 @@
 import { Plus, Settings } from "lucide-react";
-import type { ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { Link, Route, Routes, useNavigate } from "react-router";
-import type { Entry, ProfileInput, UploadInput, UserSummary } from "../shared/pixel";
+import type {
+  Entry,
+  EntryUpdateInput,
+  ProfileInput,
+  UploadInput,
+  UserSummary,
+} from "../shared/pixel";
 import { GlobalDrop } from "./components/GlobalDrop";
 import { HomeScreen } from "./screens/HomeScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
@@ -15,6 +21,8 @@ export function PixelApp({
   onUpload,
   onSaveProfile,
   onAvatarUpload,
+  onUpdateEntry,
+  onDeleteEntry,
   account,
 }: {
   user: UserSummary;
@@ -23,19 +31,35 @@ export function PixelApp({
   onUpload: (input: UploadInput) => Promise<string>;
   onSaveProfile: (input: ProfileInput) => Promise<void>;
   onAvatarUpload: (file: File) => Promise<void>;
+  onUpdateEntry: (entryId: string, input: EntryUpdateInput) => Promise<void>;
+  onDeleteEntry: (entryId: string) => Promise<void>;
   account?: ReactNode;
 }) {
+  const navigate = useNavigate();
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const openUpload = useCallback(
+    (files: File[] = []) => {
+      setUploadFiles(files);
+      void navigate("/upload");
+    },
+    [navigate],
+  );
+  const closeUpload = useCallback(() => {
+    setUploadFiles([]);
+    void navigate("/");
+  }, [navigate]);
+
   return (
-    <GlobalDrop onUpload={onUpload}>
+    <GlobalDrop onSelectFiles={openUpload}>
       <div className="app-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel home">
             <img src="/pixel.svg" alt="" /> Pixel
           </Link>
           <nav>
-            <Link className="header-upload" to="/upload">
+            <button className="header-upload" type="button" onClick={() => openUpload()}>
               <Plus size={14} /> new entry
-            </Link>
+            </button>
             <Link className="header-settings" to="/settings" aria-label="Settings">
               <Settings size={14} /> settings
             </Link>
@@ -50,7 +74,12 @@ export function PixelApp({
                 loading ? (
                   <p className="status-message">loading</p>
                 ) : (
-                  <HomeScreen user={user} entries={entries} />
+                  <HomeScreen
+                    user={user}
+                    entries={entries}
+                    onSaveProfile={onSaveProfile}
+                    onAvatarUpload={onAvatarUpload}
+                  />
                 )
               }
             />
@@ -58,8 +87,17 @@ export function PixelApp({
               path="/upload"
               element={
                 <>
-                  <HomeScreen user={user} entries={entries} />
-                  <UploadRoute onUpload={onUpload} />
+                  <HomeScreen
+                    user={user}
+                    entries={entries}
+                    onSaveProfile={onSaveProfile}
+                    onAvatarUpload={onAvatarUpload}
+                  />
+                  <UploadRoute
+                    initialFiles={uploadFiles}
+                    onUpload={onUpload}
+                    onClose={closeUpload}
+                  />
                 </>
               }
             />
@@ -75,9 +113,26 @@ export function PixelApp({
             />
             <Route
               path="/entries/:entryId"
-              element={<ViewerScreen entries={entries} loading={loading} />}
+              element={
+                <ViewerScreen
+                  entries={entries}
+                  loading={loading}
+                  onUpdate={onUpdateEntry}
+                  onDelete={onDeleteEntry}
+                />
+              }
             />
-            <Route path="*" element={<HomeScreen user={user} entries={entries} />} />
+            <Route
+              path="*"
+              element={
+                <HomeScreen
+                  user={user}
+                  entries={entries}
+                  onSaveProfile={onSaveProfile}
+                  onAvatarUpload={onAvatarUpload}
+                />
+              }
+            />
           </Routes>
         </main>
         <footer>Pixel</footer>
@@ -86,15 +141,24 @@ export function PixelApp({
   );
 }
 
-function UploadRoute({ onUpload }: { onUpload: (input: UploadInput) => Promise<string> }) {
+function UploadRoute({
+  initialFiles,
+  onUpload,
+  onClose,
+}: {
+  initialFiles: File[];
+  onUpload: (input: UploadInput) => Promise<string>;
+  onClose: () => void;
+}) {
   const navigate = useNavigate();
   return (
     <UploadScreen
-      onClose={() => void navigate("/")}
-      onUpload={async (input) => {
-        const entryId = await onUpload(input);
-        void navigate(`/entries/${entryId}`);
-        return entryId;
+      initialFiles={initialFiles}
+      onClose={onClose}
+      onUpload={onUpload}
+      onComplete={(entryIds) => {
+        if (entryIds.length === 1) void navigate(`/entries/${entryIds[0]}`);
+        else void navigate("/");
       }}
     />
   );
