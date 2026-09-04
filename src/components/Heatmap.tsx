@@ -18,6 +18,7 @@ export function Heatmap({
   useEffect(() => {
     const lens = lensRef.current;
     if (!lens) return;
+    const grid = lens.querySelector<HTMLElement>(".heatmap-grid");
 
     let frame = 0;
     const alignToday = () => {
@@ -29,22 +30,24 @@ export function Heatmap({
         );
         const week = today?.parentElement;
         if (!week) return;
-        const lensBox = lens.getBoundingClientRect();
-        const weekBox = week.getBoundingClientRect();
         lens.scrollLeft = Math.max(
           0,
-          lens.scrollLeft + weekBox.left - lensBox.left - lens.clientWidth / 2 + weekBox.width / 2,
+          week.offsetLeft - lens.clientWidth / 2 + week.clientWidth / 2,
         );
       });
     };
 
     alignToday();
+    const observer = new ResizeObserver(alignToday);
+    observer.observe(lens);
+    if (grid) observer.observe(grid);
     window.addEventListener("resize", alignToday);
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
       window.removeEventListener("resize", alignToday);
     };
-  }, [year]);
+  }, [entries.length, year]);
 
   return (
     <section className="heatmap-section" aria-labelledby="practice-heading">

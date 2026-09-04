@@ -494,6 +494,8 @@ h2 {
   overflow: hidden;
 }
 .heatmap-heading {
+  position: relative;
+  z-index: 5;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -534,6 +536,7 @@ h2 {
 }
 .heatmap-scroll-shell {
   position: relative;
+  display: flow-root;
 }
 .heatmap-grid {
   display: flex;
