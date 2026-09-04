@@ -1,5 +1,5 @@
 import { Download, Minus, Plus, X } from "lucide-react";
-import { useEffect, useState, type WheelEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 import type { Entry } from "../../shared/pixel";
 import { downloadImage } from "../lib/image";
 import { ArtworkImage } from "./ArtworkImage";
@@ -7,11 +7,14 @@ import { ArtworkImage } from "./ArtworkImage";
 const ZOOMS = [1, 2, 4, 8, 16] as const;
 
 export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () => void }) {
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
   const [zoomIndex, setZoomIndex] = useState(
     entry.width <= 64 ? 3 : entry.width <= 256 ? 2 : entry.width <= 512 ? 1 : 0,
   );
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const zoom = ZOOMS[zoomIndex];
 
   useEffect(() => {
@@ -23,6 +26,12 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
         setZoomIndex((current) => Math.min(current + 1, ZOOMS.length - 1));
       }
       if (event.key === "-") setZoomIndex((current) => Math.max(current - 1, 0));
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      if (event.key === "ArrowLeft") canvas.scrollBy({ left: -80 });
+      if (event.key === "ArrowRight") canvas.scrollBy({ left: 80 });
+      if (event.key === "ArrowUp") canvas.scrollBy({ top: -80 });
+      if (event.key === "ArrowDown") canvas.scrollBy({ top: 80 });
     };
     window.addEventListener("keydown", handleKey);
     return () => {
@@ -32,10 +41,41 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
   }, [onClose]);
 
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
+    if (!event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
     setZoomIndex((current) =>
       event.deltaY < 0 ? Math.min(current + 1, ZOOMS.length - 1) : Math.max(current - 1, 0),
     );
+  }
+
+  function startPan(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const canvas = event.currentTarget;
+    dragRef.current = {
+      pointerId: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      left: canvas.scrollLeft,
+      top: canvas.scrollTop,
+    };
+    canvas.setPointerCapture(event.pointerId);
+    setDragging(true);
+  }
+
+  function pan(event: PointerEvent<HTMLDivElement>) {
+    const start = dragRef.current;
+    if (start.pointerId !== event.pointerId) return;
+    event.currentTarget.scrollLeft = start.left - (event.clientX - start.x);
+    event.currentTarget.scrollTop = start.top - (event.clientY - start.y);
+  }
+
+  function stopPan(event: PointerEvent<HTMLDivElement>) {
+    if (dragRef.current.pointerId !== event.pointerId) return;
+    dragRef.current.pointerId = -1;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setDragging(false);
   }
 
   async function handleDownload() {
@@ -94,7 +134,17 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
           </button>
         </div>
       </div>
-      <div className="lightbox-canvas" onWheel={handleWheel} data-drop-exclude="true">
+      <div
+        ref={canvasRef}
+        className="lightbox-canvas"
+        onWheel={handleWheel}
+        onPointerDown={startPan}
+        onPointerMove={pan}
+        onPointerUp={stopPan}
+        onPointerCancel={stopPan}
+        data-dragging={dragging || undefined}
+        data-drop-exclude="true"
+      >
         <div className="lightbox-image-wrap">
           <ArtworkImage
             src={entry.imageUrl}

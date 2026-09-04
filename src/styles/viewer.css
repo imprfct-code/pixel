@@ -230,6 +230,7 @@
 }
 .lightbox-canvas {
   overflow: auto;
+  cursor: grab;
   scrollbar-color: #555 #0d0d0d;
   scrollbar-width: thin;
   background-color: #0d0d0d;
@@ -245,6 +246,11 @@
     8px -8px,
     -8px 0;
   overscroll-behavior: contain;
+  touch-action: none;
+  user-select: none;
+}
+.lightbox-canvas[data-dragging="true"] {
+  cursor: grabbing;
 }
 .lightbox-canvas::-webkit-scrollbar {
   width: 12px;
@@ -272,6 +278,8 @@
 .lightbox-canvas img {
   max-height: none;
   max-width: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
   image-rendering: pixelated;
 }
 .avatar-lightbox {

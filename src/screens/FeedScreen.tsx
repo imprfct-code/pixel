@@ -6,6 +6,13 @@ import type { Entry } from "../../shared/pixel";
 import { ArtworkImage } from "../components/ArtworkImage";
 import { ImageLightbox } from "../components/ImageLightbox";
 
+function cardSize(width: number, height: number, index: number) {
+  const ratio = width / height;
+  if (ratio >= 1.35) return "wide";
+  if (index > 1 && index % 5 === 0) return "large";
+  return ratio <= 0.72 ? "portrait" : "standard";
+}
+
 export function FeedScreen() {
   const works = useQuery(api.entries.feed);
   const [openEntry, setOpenEntry] = useState<Entry>();
@@ -23,8 +30,11 @@ export function FeedScreen() {
       <main className="page-shell feed-page">
         {works && (
           <div className="feed-board">
-            {works.map(({ entry, author }) => (
-              <article className="feed-card" key={entry.id}>
+            {works.map(({ entry, author }, index) => (
+              <article
+                className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}
+                key={entry.id}
+              >
                 <button
                   className="feed-card-preview"
                   type="button"

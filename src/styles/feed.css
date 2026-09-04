@@ -3,17 +3,24 @@
   padding-bottom: 24px;
 }
 .feed-board {
-  columns: 4 220px;
-  column-gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: dense;
+  align-items: start;
+  gap: 12px;
 }
 .feed-card {
-  display: inline-block;
+  grid-column: span 4;
   width: 100%;
-  margin: 0 0 12px;
   overflow: hidden;
-  break-inside: avoid;
   border: 1px solid var(--line);
   background: #0d0d0d;
+}
+.feed-card-wide {
+  grid-column: span 8;
+}
+.feed-card-large {
+  grid-column: span 6;
 }
 .feed-card-preview {
   display: grid;
@@ -74,10 +81,16 @@
 
 @media (max-width: 560px) {
   .feed-board {
-    columns: 2 130px;
-    column-gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
-  .feed-card {
-    margin-bottom: 8px;
+  .feed-card,
+  .feed-card-portrait,
+  .feed-card-standard {
+    grid-column: span 1;
+  }
+  .feed-card-wide,
+  .feed-card-large {
+    grid-column: span 2;
   }
 }
