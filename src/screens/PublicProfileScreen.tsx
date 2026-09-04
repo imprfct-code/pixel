@@ -2,6 +2,7 @@ import { useQuery } from "convex/react";
 import { Link, useParams } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Entry, UserSummary } from "../../shared/pixel";
+import { ProfileShortcut } from "../components/ProfileShortcut";
 import { HomeScreen } from "./HomeScreen";
 
 export function PublicProfileScreen() {
@@ -14,9 +15,7 @@ export function PublicProfileScreen() {
         <Link className="wordmark" to="/" aria-label="Pixel feed">
           <img src="/pixel.svg" alt="" /> Pixel
         </Link>
-        <Link className="header-settings" to="/profile">
-          my profile
-        </Link>
+        <ProfileShortcut />
       </header>
       <main className="page-shell">
         {profile === undefined && <p className="status-message">loading</p>}

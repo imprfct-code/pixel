@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react";
 import type { Entry } from "../../shared/pixel";
+import { calendarDateKey } from "../lib/calendar";
 
-function dateKey(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
-
-export function Heatmap({ entries }: { entries: Entry[] }) {
+export function Heatmap({
+  entries,
+  selectedDate,
+  onSelectDate,
+}: {
+  entries: Entry[];
+  selectedDate?: string;
+  onSelectDate?: (date?: string) => void;
+}) {
   const { weeks, total, activeDays, year } = useMemo(() => buildYear(entries), [entries]);
   const { showCell, resetCells, moveToCell } = useHeatmapLens();
 
@@ -34,24 +39,41 @@ export function Heatmap({ entries }: { entries: Entry[] }) {
       >
         <div
           className="heatmap-grid"
-          role="img"
+          role="group"
           aria-label={`${activeDays} practice days in ${year}`}
         >
           {weeks.map((week, weekIndex) => (
             <div className="heatmap-week" key={weekIndex}>
               {week.map((cell, dayIndex) => {
-                const label = cell && !cell.future ? cellLabel(cell) : undefined;
+                const active = Boolean(cell && !cell.future && cell.count > 0);
+                const label = active && cell ? cellLabel(cell) : undefined;
+                const key = cell?.date ?? `padding-${weekIndex}-${dayIndex}`;
+                if (active && cell) {
+                  return (
+                    <button
+                      type="button"
+                      key={key}
+                      className="heatmap-cell"
+                      data-heatmap={`${weekIndex},${dayIndex}`}
+                      data-level={cell.level}
+                      data-label={label}
+                      data-selected={selectedDate === cell.date || undefined}
+                      aria-label={`${label}. Filter works by this day`}
+                      aria-pressed={selectedDate === cell.date}
+                      onClick={() =>
+                        onSelectDate?.(selectedDate === cell.date ? undefined : cell.date)
+                      }
+                    />
+                  );
+                }
+
                 return (
                   <span
-                    key={cell?.date ?? `padding-${weekIndex}-${dayIndex}`}
+                    key={key}
                     className="heatmap-cell"
-                    data-heatmap={label ? `${weekIndex},${dayIndex}` : undefined}
                     data-level={cell?.level ?? 0}
                     data-padding={!cell || undefined}
                     data-future={cell?.future || undefined}
-                    data-label={label}
-                    aria-label={label}
-                    tabIndex={label ? 0 : undefined}
                   />
                 );
               })}
@@ -70,8 +92,7 @@ function cellLabel(cell: { date: string; count: number }) {
     month: "short",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${cell.date}T00:00:00Z`));
+  }).format(new Date(`${cell.date}T00:00:00`));
   const activity =
     cell.count === 0 ? "no pieces" : `${cell.count} ${cell.count === 1 ? "piece" : "pieces"}`;
   return `${date}\n${activity}`;
@@ -136,21 +157,21 @@ function useHeatmapLens() {
 
 function buildYear(entries: Entry[]) {
   const now = new Date();
-  const today = dateKey(now);
-  const year = now.getUTCFullYear();
+  const today = calendarDateKey(now);
+  const year = now.getFullYear();
   const counts = new Map<string, number>();
 
   for (const entry of entries) {
-    const date = entry.createdAt.slice(0, 10);
+    const date = calendarDateKey(entry.createdAt);
     if (!date.startsWith(String(year))) continue;
     counts.set(date, (counts.get(date) ?? 0) + 1);
   }
 
-  const first = new Date(Date.UTC(year, 0, 1));
-  const last = new Date(Date.UTC(year, 11, 31));
+  const first = new Date(year, 0, 1);
+  const last = new Date(year, 11, 31);
   const days = [];
-  for (const date = new Date(first); date <= last; date.setUTCDate(date.getUTCDate() + 1)) {
-    const key = dateKey(date);
+  for (const date = new Date(first); date <= last; date.setDate(date.getDate() + 1)) {
+    const key = calendarDateKey(date);
     const count = counts.get(key) ?? 0;
     days.push({
       date: key,
@@ -160,7 +181,7 @@ function buildYear(entries: Entry[]) {
     });
   }
 
-  const mondayOffset = first.getUTCDay() === 0 ? 6 : first.getUTCDay() - 1;
+  const mondayOffset = first.getDay() === 0 ? 6 : first.getDay() - 1;
   const padded: Array<(typeof days)[number] | null> = [
     ...Array.from({ length: mondayOffset }, () => null),
     ...days,

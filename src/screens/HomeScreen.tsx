@@ -6,6 +6,7 @@ import { ArtworkGrid } from "../components/ArtworkGrid";
 import { AvatarLightbox } from "../components/AvatarLightbox";
 import { Heatmap } from "../components/Heatmap";
 import { InlineProfileField } from "../components/InlineProfileField";
+import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
 
 function practiceDays(entries: Entry[]) {
   return new Set(entries.map((entry) => entry.createdAt.slice(0, 10))).size;
@@ -28,6 +29,7 @@ export function HomeScreen({
   const [avatarSaving, setAvatarSaving] = useState(false);
   const [avatarError, setAvatarError] = useState("");
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>();
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const since = new Intl.DateTimeFormat("en", { month: "short", year: "numeric" })
     .format(new Date(user.practiceStartedAt))
@@ -38,6 +40,13 @@ export function HomeScreen({
     bio: user.bio ?? "",
     website: user.website ?? "",
   };
+  const activeDate =
+    selectedDate && entries.some((entry) => calendarDateKey(entry.createdAt) === selectedDate)
+      ? selectedDate
+      : undefined;
+  const visibleEntries = activeDate
+    ? entries.filter((entry) => calendarDateKey(entry.createdAt) === activeDate)
+    : entries;
 
   function saveField(field: keyof ProfileInput, value: string) {
     if (!onSaveProfile) return Promise.reject(new Error("Profile is read only"));
@@ -167,19 +176,29 @@ export function HomeScreen({
           </div>
         </dl>
       </section>
-      <Heatmap entries={entries} />
+      <Heatmap entries={entries} selectedDate={activeDate} onSelectDate={setSelectedDate} />
       <section className="profile-gallery" aria-label="works">
         {entries.length > 0 ? (
-          <ArtworkGrid
-            works={entries.map((entry) => ({ entry, author: user }))}
-            layout="masonry"
-            visibilityControls={editable}
-            onOpen={(entry) =>
-              void navigate(`/entries/${entry.id}`, {
-                state: { returnTo: editable ? "/profile" : `/${user.username}` },
-              })
-            }
-          />
+          <>
+            {activeDate && (
+              <div className="gallery-date-filter">
+                <span>{calendarDateLabel(activeDate)}</span>
+                <button type="button" onClick={() => setSelectedDate(undefined)}>
+                  clear ×
+                </button>
+              </div>
+            )}
+            <ArtworkGrid
+              works={visibleEntries.map((entry) => ({ entry, author: user }))}
+              layout="masonry"
+              visibilityControls={editable}
+              onOpen={(entry) =>
+                void navigate(`/entries/${entry.id}`, {
+                  state: { returnTo: editable ? "/profile" : `/${user.username}` },
+                })
+              }
+            />
+          </>
         ) : (
           <p className="profile-gallery-empty">No works yet</p>
         )}

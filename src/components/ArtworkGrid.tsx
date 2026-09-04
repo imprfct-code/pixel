@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
+import { calendarDateKey, calendarDateLabel } from "../lib/calendar";
 import { ArtworkImage } from "./ArtworkImage";
 
 export type ArtworkGridItem = {
@@ -93,6 +94,26 @@ function MasonryBoard({
   );
 }
 
+function ArtworkBoard({
+  works,
+  layout,
+  onOpen,
+}: {
+  works: ArtworkGridItem[];
+  layout: "grid" | "masonry";
+  onOpen: (entry: Entry) => void;
+}) {
+  if (layout === "masonry") return <MasonryBoard works={works} onOpen={onOpen} />;
+
+  return (
+    <div className="feed-board">
+      {works.map((item, index) => (
+        <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
+      ))}
+    </div>
+  );
+}
+
 export function ArtworkGrid({
   works,
   onOpen,
@@ -131,6 +152,23 @@ export function ArtworkGrid({
         return sort === "newest" ? difference : -difference;
       });
   }, [query, sort, visibility, works]);
+  const dateGroups = useMemo(() => {
+    const groups: Array<{
+      key: string;
+      label: string;
+      works: ArtworkGridItem[];
+    }> = [];
+
+    for (const work of visibleWorks) {
+      const date = new Date(work.entry.createdAt);
+      const key = calendarDateKey(date);
+      const current = groups.at(-1);
+      if (current?.key === key) current.works.push(work);
+      else groups.push({ key, label: calendarDateLabel(date), works: [work] });
+    }
+
+    return groups;
+  }, [visibleWorks]);
 
   return (
     <>
@@ -179,15 +217,14 @@ export function ArtworkGrid({
         </div>
       )}
       {visibleWorks.length > 0 ? (
-        layout === "masonry" ? (
-          <MasonryBoard works={visibleWorks} onOpen={onOpen} />
-        ) : (
-          <div className="feed-board">
-            {visibleWorks.map((item, index) => (
-              <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
-            ))}
-          </div>
-        )
+        <div className="work-date-groups">
+          {dateGroups.map((group) => (
+            <section className="work-date-group" key={group.key}>
+              <h2 className="work-date-divider">{group.label}</h2>
+              <ArtworkBoard works={group.works} layout={layout} onOpen={onOpen} />
+            </section>
+          ))}
+        </div>
       ) : (
         <div className="work-grid-empty" role="status">
           <img src="/pixel.svg" alt="" />

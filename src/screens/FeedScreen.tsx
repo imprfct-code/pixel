@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api";
 import type { Entry } from "../../shared/pixel";
 import { ArtworkGrid, type ArtworkGridItem } from "../components/ArtworkGrid";
 import { GlobalDrop } from "../components/GlobalDrop";
+import { ProfileShortcut } from "../components/ProfileShortcut";
 import { UploadNotice } from "../components/UploadNotice";
 import { usePixelUpload } from "../hooks/usePixelUpload";
 import { UploadScreen } from "./UploadScreen";
@@ -68,9 +69,7 @@ export function FeedScreen() {
           <Link className="wordmark" to="/" aria-label="Pixel feed">
             <img src="/pixel.svg" alt="" /> Pixel
           </Link>
-          <Link className="header-settings" to="/profile">
-            my profile
-          </Link>
+          <ProfileShortcut />
         </header>
         <main className="page-shell feed-page">
           {works === undefined ? (
