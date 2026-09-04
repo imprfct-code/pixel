@@ -6,9 +6,11 @@
   .site-header nav {
     gap: 10px;
   }
-  .header-upload,
-  .header-settings {
+  .header-upload {
     font-size: 0;
+  }
+  .header-settings {
+    font-size: 10px;
   }
   .profile-block {
     grid-template-columns: 88px 1fr;
