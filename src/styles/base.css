@@ -16,6 +16,11 @@
   scrollbar-width: thin;
 }
 
+::selection {
+  background: rgba(199, 120, 122, 0.38);
+  color: #fff;
+}
+
 *::-webkit-scrollbar {
   width: 10px;
   height: 10px;

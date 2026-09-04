@@ -29,9 +29,11 @@ export function Heatmap({
         );
         const week = today?.parentElement;
         if (!week) return;
+        const lensBox = lens.getBoundingClientRect();
+        const weekBox = week.getBoundingClientRect();
         lens.scrollLeft = Math.max(
           0,
-          week.offsetLeft - lens.clientWidth / 2 + week.offsetWidth / 2,
+          lens.scrollLeft + weekBox.left - lensBox.left - lens.clientWidth / 2 + weekBox.width / 2,
         );
       });
     };
@@ -50,9 +52,9 @@ export function Heatmap({
         <span id="practice-heading">
           {total} pieces / {activeDays} days / {year}
         </span>
-        <span className="heatmap-mobile-state">
-          {selectedDate ? calendarDateLabel(selectedDate) : "swipe ↔"}
-        </span>
+        {selectedDate && (
+          <span className="heatmap-mobile-state">{calendarDateLabel(selectedDate)}</span>
+        )}
         <div className="heatmap-legend" aria-label="Activity intensity">
           <span>less</span>
           {[0, 1, 2, 3, 4].map((level) => (

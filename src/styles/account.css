@@ -199,11 +199,8 @@
     height: auto !important;
     min-height: 0 !important;
     max-height: none !important;
-    overflow: visible !important;
+    overflow: hidden !important;
   }
-  .cl-userProfile-root,
-  .cl-userProfile-root .cl-cardBox,
-  .cl-userProfile-root .cl-card,
   .cl-userProfile-root .cl-pageScrollBox {
     height: auto !important;
     max-height: none !important;

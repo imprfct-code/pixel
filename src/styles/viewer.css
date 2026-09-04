@@ -326,8 +326,11 @@
   line-height: 1.5;
   white-space: pre-wrap;
 }
+.lightbox-mobile-share {
+  display: none;
+}
 
-@media (max-width: 680px) {
+@media (max-width: 760px) {
   .lightbox {
     grid-template-rows: 50px minmax(0, 1fr) auto;
   }
@@ -344,16 +347,7 @@
     height: 32px;
   }
   .lightbox-actions .lightbox-share {
-    width: 32px;
-    padding: 0;
-    justify-content: center;
-  }
-  .lightbox-actions .lightbox-share span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
+    display: none;
   }
   .lightbox-actions > span {
     min-width: 34px;
@@ -375,6 +369,24 @@
   .lightbox-details > p {
     max-height: 5.8em;
     overflow: auto;
+  }
+  .lightbox-mobile-share {
+    display: inline-flex;
+    width: 100%;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: 1px solid #444;
+    background: #171717;
+    color: #ddd;
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  .lightbox-mobile-share[data-copied="true"] {
+    border-color: #315a39;
+    background: #112016;
+    color: #86bd8c;
   }
 }
 .avatar-lightbox {

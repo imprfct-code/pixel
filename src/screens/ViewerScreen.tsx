@@ -81,6 +81,17 @@ export function ViewerScreen() {
               </span>
             </Link>
             {entry.note && <p>{entry.note}</p>}
+            {canShare && (
+              <button
+                className="lightbox-mobile-share"
+                type="button"
+                data-copied={copied || undefined}
+                onClick={() => void copyLink()}
+              >
+                {copied ? <Check size={16} /> : <Share2 size={16} />}
+                <span aria-live="polite">{copied ? "link copied" : "share work"}</span>
+              </button>
+            )}
           </>
         }
         onClose={() => {

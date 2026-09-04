@@ -10,6 +10,22 @@ function privateEmail(email: string) {
   return `artist${String(hash % 10_000).padStart(4, "0")}@pixelmail.dev`;
 }
 
+function containsEmail(value: string) {
+  EMAIL_PATTERN.lastIndex = 0;
+  return EMAIL_PATTERN.test(value);
+}
+
+function createPrivateEmail(email: string) {
+  const element = document.createElement("span");
+  element.textContent = privateEmail(email);
+  element.className = "clerk-email-private";
+  element.tabIndex = 0;
+  element.setAttribute("role", "button");
+  element.setAttribute("aria-label", "Reveal email address");
+  originalEmails.set(element, email);
+  return element;
+}
+
 function revealEmail(element: HTMLElement) {
   const email = originalEmails.get(element);
   if (!email) return;
@@ -35,8 +51,7 @@ function maskEmails(root: ParentNode) {
     if (element.closest("script, style, textarea")) continue;
     if (element.closest(".clerk-email-private, .clerk-email-revealed")) continue;
 
-    EMAIL_PATTERN.lastIndex = 0;
-    if (EMAIL_PATTERN.test(node.data)) matches.push(node);
+    if (containsEmail(node.data)) matches.push(node);
   }
 
   for (const node of matches) {
@@ -50,20 +65,56 @@ function maskEmails(root: ParentNode) {
       const index = match.index;
       fragment.append(node.data.slice(offset, index));
 
-      const element = document.createElement("span");
-      element.textContent = privateEmail(email);
-      element.className = "clerk-email-private";
-      element.tabIndex = 0;
-      element.setAttribute("role", "button");
-      element.setAttribute("aria-label", "Reveal email address");
-      originalEmails.set(element, email);
-      fragment.append(element);
+      fragment.append(createPrivateEmail(email));
       offset = index + email.length;
     }
 
     fragment.append(node.data.slice(offset));
     node.replaceWith(fragment);
   }
+
+  maskSplitEmails(root);
+}
+
+function maskSplitEmails(root: ParentNode) {
+  const candidates = Array.from(root.querySelectorAll<HTMLElement>("*"));
+
+  for (const element of candidates.reverse()) {
+    if (element.closest("script, style, textarea")) continue;
+    if (element.closest(".clerk-email-private, .clerk-email-revealed")) continue;
+    if (!containsEmail(element.textContent ?? "")) continue;
+    if (Array.from(element.children).some((child) => containsEmail(child.textContent ?? ""))) {
+      continue;
+    }
+
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+    const nodes: Text[] = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode as Text);
+    const text = nodes.map((node) => node.data).join("");
+    const matches = Array.from(text.matchAll(EMAIL_PATTERN)).reverse();
+
+    for (const match of matches) {
+      const start = locateTextOffset(nodes, match.index);
+      const end = locateTextOffset(nodes, match.index + match[0].length);
+      if (!start || !end) continue;
+
+      const range = document.createRange();
+      range.setStart(start.node, start.offset);
+      range.setEnd(end.node, end.offset);
+      range.deleteContents();
+      range.insertNode(createPrivateEmail(match[0]));
+    }
+  }
+}
+
+function locateTextOffset(nodes: Text[], offset: number) {
+  let cursor = 0;
+  for (const node of nodes) {
+    const end = cursor + node.data.length;
+    if (offset <= end) return { node, offset: offset - cursor };
+    cursor = end;
+  }
+  return undefined;
 }
 
 export function ClerkEmailPrivacy() {
