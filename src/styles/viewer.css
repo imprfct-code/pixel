@@ -231,8 +231,7 @@
 .lightbox-canvas {
   overflow: auto;
   cursor: grab;
-  scrollbar-color: #555 #0d0d0d;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   background-color: #0d0d0d;
   background-image:
     linear-gradient(45deg, #151515 25%, transparent 25%),
@@ -253,20 +252,7 @@
   cursor: grabbing;
 }
 .lightbox-canvas::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
-}
-.lightbox-canvas::-webkit-scrollbar-track,
-.lightbox-canvas::-webkit-scrollbar-corner {
-  background: #0d0d0d;
-}
-.lightbox-canvas::-webkit-scrollbar-thumb {
-  border: 3px solid #0d0d0d;
-  border-radius: 8px;
-  background: #4a4a4a;
-}
-.lightbox-canvas::-webkit-scrollbar-thumb:hover {
-  background: #686868;
+  display: none;
 }
 .lightbox-image-wrap {
   display: grid;
