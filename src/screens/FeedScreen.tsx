@@ -1,5 +1,4 @@
 import { useQuery } from "convex/react";
-import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { api } from "../../convex/_generated/api";
@@ -7,14 +6,8 @@ import type { Entry } from "../../shared/pixel";
 import { ArtworkImage } from "../components/ArtworkImage";
 import { ImageLightbox } from "../components/ImageLightbox";
 
-function dateLabel(value: string) {
-  return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" })
-    .format(new Date(value))
-    .toLowerCase();
-}
-
 export function FeedScreen() {
-  const participants = useQuery(api.entries.feed);
+  const works = useQuery(api.entries.feed);
   const [openEntry, setOpenEntry] = useState<Entry>();
 
   return (
@@ -28,58 +21,28 @@ export function FeedScreen() {
         </Link>
       </header>
       <main className="page-shell feed-page">
-        <div className="feed-heading">
-          <div>
-            <p className="eyebrow">community</p>
-            <h1>Feed</h1>
-          </div>
-          <span>{participants ? `${participants.length} artists` : "loading"}</span>
-        </div>
-        {participants === undefined && <p className="status-message">loading</p>}
-        {participants?.length === 0 && <p className="feed-empty">No artists yet</p>}
-        {participants && participants.length > 0 && (
-          <div className="feed-list">
-            {participants.map((participant) => (
-              <article className="feed-artist" key={participant.user.id}>
-                <Link className="feed-artist-profile" to={`/${participant.user.username}`}>
-                  <img src={participant.user.avatarUrl ?? "/avatar.png"} alt="" />
-                  <span>
-                    <strong>@{participant.user.username}</strong>
-                    {participant.user.displayName && <small>{participant.user.displayName}</small>}
-                  </span>
-                  <ArrowUpRight size={15} />
+        {works && (
+          <div className="feed-board">
+            {works.map(({ entry, author }) => (
+              <article className="feed-card" key={entry.id}>
+                <button
+                  className="feed-card-preview"
+                  type="button"
+                  style={{ aspectRatio: `${entry.width} / ${entry.height}` }}
+                  onClick={() => setOpenEntry(entry as Entry)}
+                  aria-label={`Open ${entry.title ?? entry.originalFilename}`}
+                >
+                  <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
+                </button>
+                <Link className="feed-card-author" to={`/${author.username}`}>
+                  <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
+                  <strong>@{author.username}</strong>
                 </Link>
-                {participant.entries.length > 0 ? (
-                  <div className="feed-artworks">
-                    {participant.entries.map((entry) => (
-                      <button
-                        key={entry.id}
-                        type="button"
-                        onClick={() => setOpenEntry(entry as Entry)}
-                        aria-label={`Open ${entry.title ?? entry.originalFilename}`}
-                      >
-                        <span className="feed-artwork-image">
-                          <ArtworkImage
-                            src={entry.imageUrl}
-                            alt={entry.title ?? entry.originalFilename}
-                          />
-                        </span>
-                        <span className="feed-artwork-meta">
-                          <strong>{entry.title ?? entry.originalFilename}</strong>
-                          <time dateTime={entry.createdAt}>{dateLabel(entry.createdAt)}</time>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="feed-no-work">No public entries</p>
-                )}
               </article>
             ))}
           </div>
         )}
       </main>
-      <footer>Pixel</footer>
       {openEntry && <ImageLightbox entry={openEntry} onClose={() => setOpenEntry(undefined)} />}
     </div>
   );

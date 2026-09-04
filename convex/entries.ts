@@ -104,30 +104,25 @@ export const feed = query({
   args: {},
   handler: async (ctx) => {
     const users = await ctx.db.query("users").collect();
-    const participants = await Promise.all(
-      users.map(async (user) => {
-        const entries = await ctx.db
-          .query("entries")
-          .withIndex("by_user_created", (q) => q.eq("userId", user._id))
-          .order("desc")
-          .collect();
-        const latest = entries
-          .filter((entry) => entry.status === "ready" && entry.visibility === "public")
-          .slice(0, 3);
-        return {
-          user: userPayload(user),
-          entries: await Promise.all(
-            latest.map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
-          ),
-        };
+    const usersById = new Map(users.map((user) => [user._id, user]));
+    const entries = await ctx.db.query("entries").collect();
+    const publicEntries = entries
+      .filter((entry) => entry.status === "ready" && entry.visibility === "public")
+      .sort((left, right) => right.createdAt - left.createdAt)
+      .slice(0, 60);
+
+    return Promise.all(
+      publicEntries.flatMap((entry) => {
+        const user = usersById.get(entry.userId);
+        if (!user) return [];
+        return [
+          (async () => ({
+            entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+            author: userPayload(user),
+          }))(),
+        ];
       }),
     );
-
-    return participants.sort((left, right) => {
-      const leftDate = left.entries[0]?.createdAt ?? left.user.practiceStartedAt;
-      const rightDate = right.entries[0]?.createdAt ?? right.user.practiceStartedAt;
-      return rightDate.localeCompare(leftDate);
-    });
   },
 });
 
