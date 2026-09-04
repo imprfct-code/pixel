@@ -71,7 +71,16 @@ export function HomeScreen({
               type="file"
               accept="image/png,image/jpeg,image/webp,image/gif"
               disabled={avatarSaving}
-              onChange={(event) => void uploadAvatar(event.target.files?.[0])}
+              onClick={(event) => {
+                const input = event.currentTarget;
+                window.addEventListener("focus", () => input.blur(), { once: true });
+              }}
+              onChange={(event) => {
+                const file = event.currentTarget.files?.[0];
+                event.currentTarget.value = "";
+                event.currentTarget.blur();
+                void uploadAvatar(file);
+              }}
             />
           </label>
         ) : (
