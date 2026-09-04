@@ -41,7 +41,6 @@ export function ImageLightbox({ entry, onClose }: { entry: Entry; onClose: () =>
   }, [onClose]);
 
   function handleWheel(event: WheelEvent<HTMLDivElement>) {
-    if (!event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
     setZoomIndex((current) =>
       event.deltaY < 0 ? Math.min(current + 1, ZOOMS.length - 1) : Math.max(current - 1, 0),
