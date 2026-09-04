@@ -1,4 +1,4 @@
-import { Check, LockKeyhole, Pencil, Share2 } from "lucide-react";
+import { Check, Pencil, Share2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import type { Entry, EntryUpdateInput } from "../../shared/pixel";
@@ -69,10 +69,6 @@ export function ViewerScreen({
               {copied ? <Check size={13} /> : <Share2 size={13} />}
               <span aria-live="polite">{copied ? "copied" : "share"}</span>
             </button>
-            <span className="visibility large">
-              {entry.visibility === "private" ? <LockKeyhole size={13} /> : <Share2 size={13} />}
-              {entry.visibility}
-            </span>
             <button type="button" onClick={() => setEditing(true)} aria-label="Edit entry">
               <Pencil size={15} />
             </button>
