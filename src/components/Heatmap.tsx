@@ -21,8 +21,6 @@ export function Heatmap({ entries }: { entries: Entry[] }) {
             <i key={level} data-level={level} />
           ))}
           <span>more</span>
-          <i className="milestone-key" />
-          <span>milestone</span>
         </div>
       </div>
       <div
@@ -51,7 +49,6 @@ export function Heatmap({ entries }: { entries: Entry[] }) {
                     data-level={cell?.level ?? 0}
                     data-padding={!cell || undefined}
                     data-future={cell?.future || undefined}
-                    data-milestone={cell?.milestone || undefined}
                     data-label={label}
                     aria-label={label}
                     tabIndex={label ? 0 : undefined}
@@ -67,7 +64,7 @@ export function Heatmap({ entries }: { entries: Entry[] }) {
   );
 }
 
-function cellLabel(cell: { date: string; count: number; milestone: boolean }) {
+function cellLabel(cell: { date: string; count: number }) {
   const date = new Intl.DateTimeFormat("en", {
     weekday: "short",
     month: "short",
@@ -77,7 +74,7 @@ function cellLabel(cell: { date: string; count: number; milestone: boolean }) {
   }).format(new Date(`${cell.date}T00:00:00Z`));
   const activity =
     cell.count === 0 ? "no pieces" : `${cell.count} ${cell.count === 1 ? "piece" : "pieces"}`;
-  return `${date}\n${activity}${cell.milestone ? "\nmilestone" : ""}`;
+  return `${date}\n${activity}`;
 }
 
 function useHeatmapLens() {
@@ -141,16 +138,12 @@ function buildYear(entries: Entry[]) {
   const now = new Date();
   const today = dateKey(now);
   const year = now.getUTCFullYear();
-  const counts = new Map<string, { count: number; milestone: boolean }>();
+  const counts = new Map<string, number>();
 
   for (const entry of entries) {
     const date = entry.createdAt.slice(0, 10);
     if (!date.startsWith(String(year))) continue;
-    const current = counts.get(date) ?? { count: 0, milestone: false };
-    counts.set(date, {
-      count: current.count + 1,
-      milestone: current.milestone || entry.milestone,
-    });
+    counts.set(date, (counts.get(date) ?? 0) + 1);
   }
 
   const first = new Date(Date.UTC(year, 0, 1));
@@ -158,22 +151,12 @@ function buildYear(entries: Entry[]) {
   const days = [];
   for (const date = new Date(first); date <= last; date.setUTCDate(date.getUTCDate() + 1)) {
     const key = dateKey(date);
-    const activity = counts.get(key) ?? { count: 0, milestone: false };
+    const count = counts.get(key) ?? 0;
     days.push({
       date: key,
-      count: activity.count,
-      milestone: activity.milestone,
+      count,
       future: key > today,
-      level:
-        activity.count === 0
-          ? 0
-          : activity.count === 1
-            ? 1
-            : activity.count === 2
-              ? 2
-              : activity.count <= 4
-                ? 3
-                : 4,
+      level: count === 0 ? 0 : count === 1 ? 1 : count === 2 ? 2 : count <= 4 ? 3 : 4,
     });
   }
 
@@ -188,7 +171,7 @@ function buildYear(entries: Entry[]) {
     weeks: Array.from({ length: padded.length / 7 }, (_, index) =>
       padded.slice(index * 7, index * 7 + 7),
     ),
-    total: Array.from(counts.values()).reduce((sum, item) => sum + item.count, 0),
+    total: Array.from(counts.values()).reduce((sum, count) => sum + count, 0),
     activeDays: counts.size,
     year,
   };

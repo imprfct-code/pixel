@@ -16,11 +16,10 @@ type UploadDraft = {
   title: string;
   note: string;
   visibility: Visibility;
-  milestone: boolean;
 };
 
 function createDraft(file: File): UploadDraft {
-  return { file, title: "", note: "", visibility: "private", milestone: false };
+  return { file, title: "", note: "", visibility: "private" };
 }
 
 function fileKey(file: File) {
@@ -126,7 +125,6 @@ export function UploadScreen({
             title: draft.title.trim() || undefined,
             note: draft.note.trim() || undefined,
             visibility: draft.visibility,
-            milestone: draft.milestone,
           }),
         );
       }
@@ -285,15 +283,6 @@ export function UploadScreen({
               </div>
               <small>default / private</small>
             </fieldset>
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={active?.milestone ?? false}
-                disabled={!active}
-                onChange={(event) => updateDraft({ milestone: event.target.checked })}
-              />{" "}
-              mark as a milestone
-            </label>
             {error && (
               <p className="form-error" role="alert">
                 {error}

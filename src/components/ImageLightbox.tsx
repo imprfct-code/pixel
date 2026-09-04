@@ -12,11 +12,12 @@ import type { Entry } from "../../shared/pixel";
 import { downloadImage } from "../lib/image";
 import { ArtworkImage } from "./ArtworkImage";
 
-const MIN_ZOOM = 1;
+const MIN_ZOOM = 0.05;
 const MAX_ZOOM = 16;
 const BUTTON_ZOOM_FACTOR = 1.25;
 const WHEEL_ZOOM_SENSITIVITY = 0.02;
 const MAX_WHEEL_ZOOM_EXPONENT = 0.25;
+const IMAGE_PADDING = 96;
 
 function clampZoom(zoom: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
@@ -24,6 +25,10 @@ function clampZoom(zoom: number) {
 
 function zoomLabel(zoom: number) {
   return `${Number(zoom.toFixed(2))}×`;
+}
+
+function preferredZoom(entry: Entry) {
+  return entry.width <= 64 ? 8 : entry.width <= 256 ? 4 : entry.width <= 512 ? 2 : 1;
 }
 
 export function ImageLightbox({
@@ -46,12 +51,21 @@ export function ImageLightbox({
       }
     | undefined
   >(undefined);
-  const [zoom, setZoom] = useState(
-    entry.width <= 64 ? 8 : entry.width <= 256 ? 4 : entry.width <= 512 ? 2 : 1,
-  );
+  const [zoom, setZoom] = useState(() => preferredZoom(entry));
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const [dragging, setDragging] = useState(false);
+
+  useLayoutEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const fitZoom = Math.min(
+      Math.max(1, canvas.clientWidth - IMAGE_PADDING) / entry.width,
+      Math.max(1, canvas.clientHeight - IMAGE_PADDING) / entry.height,
+    );
+    setZoom(clampZoom(Math.min(preferredZoom(entry), fitZoom)));
+    canvas.scrollTo({ left: 0, top: 0 });
+  }, [entry]);
 
   const changeZoom = useCallback((factor: number, clientX?: number, clientY?: number) => {
     const canvas = canvasRef.current;

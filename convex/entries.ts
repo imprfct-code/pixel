@@ -25,7 +25,6 @@ function entryPayload(entry: Doc<"entries">, imageUrl: string) {
     height: entry.height,
     fileSize: entry.fileSize,
     visibility: entry.visibility,
-    milestone: entry.milestone,
     createdAt: new Date(entry.createdAt).toISOString(),
     imageUrl,
   };
@@ -132,7 +131,6 @@ export const updateMine = mutation({
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     visibility,
-    milestone: v.boolean(),
   },
   handler: async (ctx, args) => {
     const user = await userFromAuth(ctx);
@@ -144,7 +142,6 @@ export const updateMine = mutation({
       title: optionalText(args.title, 100),
       note: optionalText(args.note, 500),
       visibility: args.visibility,
-      milestone: args.milestone,
     });
   },
 });
@@ -170,7 +167,6 @@ export const beginUpload = mutation({
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     visibility,
-    milestone: v.boolean(),
   },
   handler: async (ctx, args) => {
     const user = await userFromAuth(ctx);

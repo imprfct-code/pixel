@@ -29,7 +29,6 @@ export interface Entry {
   height: number;
   fileSize: number;
   visibility: Visibility;
-  milestone: boolean;
   createdAt: string;
   imageUrl: string;
 }
@@ -39,7 +38,6 @@ export interface UploadInput {
   title?: string;
   note?: string;
   visibility: Visibility;
-  milestone: boolean;
   width: number;
   height: number;
 }
@@ -48,5 +46,4 @@ export interface EntryUpdateInput {
   title?: string;
   note?: string;
   visibility: Visibility;
-  milestone: boolean;
 }

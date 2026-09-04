@@ -26,7 +26,6 @@ export default defineSchema({
     title: v.optional(v.string()),
     note: v.optional(v.string()),
     visibility,
-    milestone: v.boolean(),
     status: v.union(v.literal("uploading"), v.literal("ready")),
     createdAt: v.number(),
   }).index("by_user_created", ["userId", "createdAt"]),

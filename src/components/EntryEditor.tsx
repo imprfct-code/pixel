@@ -17,7 +17,6 @@ export function EntryEditor({
   const [title, setTitle] = useState(entry.title ?? "");
   const [note, setNote] = useState(entry.note ?? "");
   const [visibility, setVisibility] = useState(entry.visibility);
-  const [milestone, setMilestone] = useState(entry.milestone);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
@@ -39,7 +38,6 @@ export function EntryEditor({
         title: title.trim() || undefined,
         note: note.trim() || undefined,
         visibility,
-        milestone,
       });
       onClose();
     } catch (caught) {
@@ -120,14 +118,6 @@ export function EntryEditor({
               ))}
             </div>
           </fieldset>
-          <label className="checkbox">
-            <input
-              type="checkbox"
-              checked={milestone}
-              onChange={(event) => setMilestone(event.target.checked)}
-            />{" "}
-            mark as a milestone
-          </label>
           {error && <p className="form-error">{error}</p>}
           <div className="entry-editor-actions">
             <button

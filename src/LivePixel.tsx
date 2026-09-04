@@ -61,7 +61,6 @@ export function LivePixel() {
       title: input.title,
       note: input.note,
       visibility: input.visibility,
-      milestone: input.milestone,
     });
     let response: Response;
     try {

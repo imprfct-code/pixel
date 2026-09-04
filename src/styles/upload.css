@@ -217,6 +217,10 @@ input:focus,
 textarea:focus {
   border-color: #626262;
 }
+.form-fields textarea {
+  min-height: 96px;
+  resize: none;
+}
 fieldset {
   margin: 0;
   padding: 0;

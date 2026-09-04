@@ -15,7 +15,6 @@ const PREVIEW_ENTRY: Entry = {
   height: 1024,
   fileSize: 1_300_000,
   visibility: "private",
-  milestone: false,
   createdAt: new Date().toISOString(),
   imageUrl: "/practice-studies.png",
 };
@@ -144,7 +143,6 @@ export function Timeline({
                   )}
                   {entry.visibility}
                 </span>
-                {entry.milestone && <span className="timeline-milestone">milestone</span>}
               </div>
             </div>
           </article>
