@@ -1,6 +1,6 @@
 import { Plus, Settings } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
-import { Link, Navigate, Route, Routes, useNavigate } from "react-router";
+import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import type {
   Entry,
   EntryUpdateInput,
@@ -36,6 +36,7 @@ export function PixelApp({
   account?: ReactNode;
 }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const openUpload = useCallback(
     (files: File[] = []) => {
@@ -67,64 +68,40 @@ export function PixelApp({
           </nav>
         </header>
         <main className="page-shell">
-          <Routes>
-            <Route
-              path="/profile"
-              element={
-                loading ? (
-                  <p className="status-message">loading</p>
-                ) : (
-                  <HomeScreen
-                    user={user}
-                    entries={entries}
-                    onSaveProfile={onSaveProfile}
-                    onAvatarUpload={onAvatarUpload}
-                  />
-                )
-              }
+          {pathname === "/" && <Navigate to="/profile" replace />}
+          {pathname === "/profile" &&
+            (loading ? (
+              <p className="status-message">loading</p>
+            ) : (
+              <HomeScreen
+                user={user}
+                entries={entries}
+                onSaveProfile={onSaveProfile}
+                onAvatarUpload={onAvatarUpload}
+              />
+            ))}
+          {pathname === "/upload" && (
+            <>
+              <HomeScreen
+                user={user}
+                entries={entries}
+                onSaveProfile={onSaveProfile}
+                onAvatarUpload={onAvatarUpload}
+              />
+              <UploadRoute initialFiles={uploadFiles} onUpload={onUpload} onClose={closeUpload} />
+            </>
+          )}
+          {pathname === "/settings" && (
+            <SettingsScreen user={user} onSave={onSaveProfile} onAvatarUpload={onAvatarUpload} />
+          )}
+          {pathname.startsWith("/entries/") && (
+            <ViewerScreen
+              entries={entries}
+              loading={loading}
+              onUpdate={onUpdateEntry}
+              onDelete={onDeleteEntry}
             />
-            <Route
-              path="/upload"
-              element={
-                <>
-                  <HomeScreen
-                    user={user}
-                    entries={entries}
-                    onSaveProfile={onSaveProfile}
-                    onAvatarUpload={onAvatarUpload}
-                  />
-                  <UploadRoute
-                    initialFiles={uploadFiles}
-                    onUpload={onUpload}
-                    onClose={closeUpload}
-                  />
-                </>
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                <SettingsScreen
-                  user={user}
-                  onSave={onSaveProfile}
-                  onAvatarUpload={onAvatarUpload}
-                />
-              }
-            />
-            <Route
-              path="/entries/:entryId"
-              element={
-                <ViewerScreen
-                  entries={entries}
-                  loading={loading}
-                  onUpdate={onUpdateEntry}
-                  onDelete={onDeleteEntry}
-                />
-              }
-            />
-            <Route path="/" element={<Navigate to="/profile" replace />} />
-            <Route path="*" element={<Navigate to="/profile" replace />} />
-          </Routes>
+          )}
         </main>
         <footer>Pixel</footer>
       </div>
