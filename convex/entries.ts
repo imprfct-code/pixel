@@ -88,11 +88,14 @@ export const view = query({
     if (entry.visibility === "private" && !canEdit) {
       return { status: "private" as const };
     }
+    const author = await ctx.db.get("users", entry.userId);
+    if (!author) return null;
 
     return {
       status: "ready" as const,
       canEdit,
       entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+      author: userPayload(author),
     };
   },
 });

@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Entry, UserSummary } from "../../shared/pixel";
 import { ArtworkImage } from "./ArtworkImage";
@@ -14,6 +14,83 @@ function cardSize(width: number, height: number, index: number) {
   if (ratio >= 1.35) return "wide";
   if (index > 1 && index % 5 === 0) return "large";
   return ratio <= 0.72 ? "portrait" : "standard";
+}
+
+function ArtworkCard({
+  item: { entry, author },
+  index,
+  onOpen,
+}: {
+  item: ArtworkGridItem;
+  index: number;
+  onOpen: (entry: Entry) => void;
+}) {
+  return (
+    <article className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}>
+      <button
+        className="feed-card-preview"
+        type="button"
+        style={{ aspectRatio: `${entry.width} / ${entry.height}` }}
+        onClick={() => onOpen(entry)}
+        aria-label={`Open ${entry.title ?? entry.originalFilename}`}
+      >
+        <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
+      </button>
+      <Link className="feed-card-author" to={`/${author.username}`}>
+        <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
+        <strong>@{author.username}</strong>
+      </Link>
+    </article>
+  );
+}
+
+function columnCount(width: number, itemCount: number) {
+  const maximum = width < 340 ? 2 : width < 760 ? 3 : 4;
+  return Math.max(1, Math.min(itemCount, maximum));
+}
+
+function MasonryBoard({
+  works,
+  onOpen,
+}: {
+  works: ArtworkGridItem[];
+  onOpen: (entry: Entry) => void;
+}) {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [columns, setColumns] = useState(() => Math.max(1, Math.min(works.length, 4)));
+
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board) return;
+    const resize = () => setColumns(columnCount(board.clientWidth, works.length));
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(board);
+    return () => observer.disconnect();
+  }, [works.length]);
+
+  const groups = useMemo(() => {
+    const next = Array.from({ length: columns }, () => [] as typeof works);
+    const heights = Array.from({ length: columns }, () => 0);
+    for (const item of works) {
+      const shortest = heights.indexOf(Math.min(...heights));
+      next[shortest].push(item);
+      heights[shortest] += item.entry.height / item.entry.width + 0.1;
+    }
+    return next;
+  }, [columns, works]);
+
+  return (
+    <div ref={boardRef} className="feed-board" data-layout="masonry" data-columns={columns}>
+      {groups.map((group, column) => (
+        <div className="masonry-column" key={column}>
+          {group.map((item, index) => (
+            <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function ArtworkGrid({
@@ -84,28 +161,15 @@ export function ArtworkGrid({
         </div>
       )}
       {visibleWorks.length > 0 ? (
-        <div className="feed-board" data-layout={layout}>
-          {visibleWorks.map(({ entry, author }, index) => (
-            <article
-              className={`feed-card feed-card-${cardSize(entry.width, entry.height, index)}`}
-              key={entry.id}
-            >
-              <button
-                className="feed-card-preview"
-                type="button"
-                style={{ aspectRatio: `${entry.width} / ${entry.height}` }}
-                onClick={() => onOpen(entry)}
-                aria-label={`Open ${entry.title ?? entry.originalFilename}`}
-              >
-                <ArtworkImage src={entry.imageUrl} alt={entry.title ?? entry.originalFilename} />
-              </button>
-              <Link className="feed-card-author" to={`/${author.username}`}>
-                <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
-                <strong>@{author.username}</strong>
-              </Link>
-            </article>
-          ))}
-        </div>
+        layout === "masonry" ? (
+          <MasonryBoard works={visibleWorks} onOpen={onOpen} />
+        ) : (
+          <div className="feed-board">
+            {visibleWorks.map((item, index) => (
+              <ArtworkCard item={item} index={index} onOpen={onOpen} key={item.entry.id} />
+            ))}
+          </div>
+        )
       ) : (
         <div className="work-grid-empty" role="status">
           <img src="/pixel.svg" alt="" />

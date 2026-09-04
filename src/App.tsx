@@ -26,22 +26,22 @@ export function PixelApp({
 }) {
   const navigate = useNavigate();
   const { pathname, state } = useLocation();
-  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
-  const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
+  const [uploadFile, setUploadFile] = useState<File>();
+  const [uploadNotice, setUploadNotice] = useState<string>();
   const openUpload = useCallback(
-    (files: File[] = []) => {
-      setUploadFiles(files);
+    (file?: File) => {
+      setUploadFile(file);
       void navigate("/upload");
     },
     [navigate],
   );
   const closeUpload = useCallback(() => {
-    setUploadFiles([]);
+    setUploadFile(undefined);
     void navigate("/profile");
   }, [navigate]);
 
   return (
-    <GlobalDrop onSelectFiles={openUpload}>
+    <GlobalDrop onSelectFile={openUpload}>
       <div className="app-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel feed">
@@ -75,21 +75,14 @@ export function PixelApp({
                 onAvatarUpload={onAvatarUpload}
               />
               <UploadRoute
-                initialFiles={
-                  uploadFiles.length > 0
-                    ? uploadFiles
-                    : Array.isArray(state?.uploadFiles)
-                      ? state.uploadFiles
-                      : []
+                initialFile={
+                  uploadFile ?? (state?.uploadFile instanceof File ? state.uploadFile : undefined)
                 }
                 onUpload={onUpload}
                 onClose={closeUpload}
-                onComplete={(entryIds) => {
+                onComplete={(entryId) => {
                   closeUpload();
-                  setUploadNotice({
-                    entryId: entryIds[entryIds.length - 1],
-                    count: entryIds.length,
-                  });
+                  setUploadNotice(entryId);
                 }}
               />
             </>
@@ -97,9 +90,8 @@ export function PixelApp({
         </main>
         {uploadNotice && (
           <UploadNotice
-            entry={entries.find((entry) => entry.id === uploadNotice.entryId)}
-            entryId={uploadNotice.entryId}
-            count={uploadNotice.count}
+            entry={entries.find((entry) => entry.id === uploadNotice)}
+            entryId={uploadNotice}
             onClose={() => setUploadNotice(undefined)}
           />
         )}
@@ -109,19 +101,19 @@ export function PixelApp({
 }
 
 function UploadRoute({
-  initialFiles,
+  initialFile,
   onUpload,
   onClose,
   onComplete,
 }: {
-  initialFiles: File[];
+  initialFile?: File;
   onUpload: (input: UploadInput) => Promise<string>;
   onClose: () => void;
-  onComplete: (entryIds: string[]) => void;
+  onComplete: (entryId: string) => void;
 }) {
   return (
     <UploadScreen
-      initialFiles={initialFiles}
+      initialFile={initialFile}
       onClose={onClose}
       onUpload={onUpload}
       onComplete={onComplete}

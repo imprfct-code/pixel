@@ -46,23 +46,23 @@ export function FeedScreen() {
   const works = useQuery(api.entries.feed);
   const mine = useQuery(api.entries.listMine, isSignedIn ? {} : "skip");
   const upload = usePixelUpload();
-  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadFile, setUploadFile] = useState<File>();
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [uploadNotice, setUploadNotice] = useState<{ entryId: string; count: number }>();
+  const [uploadNotice, setUploadNotice] = useState<string>();
   const openUpload = useCallback(
-    (files: File[] = []) => {
+    (file?: File) => {
       if (!isSignedIn) {
         void navigate("/sign-in");
         return;
       }
-      setUploadFiles(files);
+      setUploadFile(file);
       setUploadOpen(true);
     },
     [isSignedIn, navigate],
   );
 
   return (
-    <GlobalDrop onSelectFiles={openUpload}>
+    <GlobalDrop onSelectFile={openUpload}>
       <div className="app-shell feed-shell">
         <header className="site-header">
           <Link className="wordmark" to="/" aria-label="Pixel feed">
@@ -97,29 +97,23 @@ export function FeedScreen() {
         )}
         {uploadOpen && (
           <UploadScreen
-            initialFiles={uploadFiles}
+            initialFile={uploadFile}
             onUpload={upload}
             onClose={() => {
-              setUploadFiles([]);
+              setUploadFile(undefined);
               setUploadOpen(false);
             }}
-            onComplete={(entryIds) => {
-              setUploadFiles([]);
+            onComplete={(entryId) => {
+              setUploadFile(undefined);
               setUploadOpen(false);
-              setUploadNotice({
-                entryId: entryIds[entryIds.length - 1],
-                count: entryIds.length,
-              });
+              setUploadNotice(entryId);
             }}
           />
         )}
         {uploadNotice && (
           <UploadNotice
-            entry={(mine as Entry[] | undefined)?.find(
-              (entry) => entry.id === uploadNotice.entryId,
-            )}
-            entryId={uploadNotice.entryId}
-            count={uploadNotice.count}
+            entry={(mine as Entry[] | undefined)?.find((entry) => entry.id === uploadNotice)}
+            entryId={uploadNotice}
             onClose={() => setUploadNotice(undefined)}
           />
         )}

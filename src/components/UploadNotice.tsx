@@ -5,12 +5,10 @@ import type { Entry } from "../../shared/pixel";
 export function UploadNotice({
   entry,
   entryId,
-  count,
   onClose,
 }: {
   entry?: Entry;
   entryId: string;
-  count: number;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
@@ -37,7 +35,7 @@ export function UploadNotice({
   return (
     <aside className="upload-notice" role="status" data-share={canShare || undefined}>
       <div className="upload-notice-preview">{entry && <img src={entry.imageUrl} alt="" />}</div>
-      <strong>{count > 1 ? `${count} uploaded` : "uploaded"}</strong>
+      <strong>uploaded</strong>
       {canShare && (
         <button
           className="upload-notice-share"

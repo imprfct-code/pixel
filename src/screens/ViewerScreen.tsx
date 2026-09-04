@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
-import type { Entry } from "../../shared/pixel";
+import type { Entry, UserSummary } from "../../shared/pixel";
 import { EntryEditor } from "../components/EntryEditor";
 import { ImageLightbox } from "../components/ImageLightbox";
 
@@ -64,12 +64,25 @@ export function ViewerScreen() {
     );
   }
   const entry = result.entry as Entry;
+  const author = result.author as UserSummary;
   const canShare = entry.visibility !== "private";
 
   return (
     <>
       <ImageLightbox
         entry={entry}
+        details={
+          <>
+            <Link className="lightbox-author" to={`/${author.username}`}>
+              <img src={author.avatarUrl ?? "/avatar.png"} alt="" />
+              <span>
+                <strong>@{author.username}</strong>
+                {author.displayName && <small>{author.displayName}</small>}
+              </span>
+            </Link>
+            {entry.note && <p>{entry.note}</p>}
+          </>
+        }
         onClose={() => {
           if (editing) setEditing(false);
           else void navigate(returnTo ?? (result.canEdit ? "/profile" : "/"));

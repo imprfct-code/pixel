@@ -6,14 +6,14 @@ type DropStatus = "idle" | "ready" | "error";
 
 export function GlobalDrop({
   children,
-  onSelectFiles,
+  onSelectFile,
 }: {
   children: ReactNode;
-  onSelectFiles: (files: File[]) => void;
+  onSelectFile: (file?: File) => void;
 }) {
   const depth = useRef(0);
   const [status, setStatus] = useState<DropStatus>("idle");
-  const [message, setMessage] = useState("Drop to create works");
+  const [message, setMessage] = useState("Drop to create a work");
 
   useEffect(() => {
     const context = document.modelContext;
@@ -28,7 +28,7 @@ export function GlobalDrop({
           inputSchema: { type: "object", properties: {}, additionalProperties: false },
           annotations: { readOnlyHint: true, untrustedContentHint: false },
           execute() {
-            onSelectFiles([]);
+            onSelectFile();
             return { path: "/upload" };
           },
         },
@@ -36,7 +36,7 @@ export function GlobalDrop({
       ),
     ).catch(() => undefined);
     return () => lifecycle.abort();
-  }, [onSelectFiles]);
+  }, [onSelectFile]);
 
   function isExcluded(event: DragEvent) {
     return event.target instanceof Element && Boolean(event.target.closest("[data-drop-exclude]"));
@@ -46,8 +46,9 @@ export function GlobalDrop({
     if (!event.dataTransfer.types.includes("Files") || isExcluded(event)) return;
     event.preventDefault();
     depth.current += 1;
-    const count = event.dataTransfer.items.length;
-    setMessage(count > 1 ? `Drop ${count} files to create works` : "Drop to create a work");
+    setMessage(
+      event.dataTransfer.items.length > 1 ? "Drop one image at a time" : "Drop to create a work",
+    );
     setStatus("ready");
   }
 
@@ -75,10 +76,15 @@ export function GlobalDrop({
       setStatus("idle");
       return;
     }
+    if (files.length > 1) {
+      setMessage("Drop one image at a time");
+      setStatus("error");
+      return;
+    }
     try {
-      files.forEach(validateImageFile);
+      validateImageFile(files[0]);
       setStatus("idle");
-      onSelectFiles(files);
+      onSelectFile(files[0]);
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : "Upload failed");
       setStatus("error");
@@ -115,7 +121,7 @@ export function GlobalDrop({
 }
 
 function statusLabel(status: DropStatus) {
-  if (status === "ready") return "PNG, GIF, JPG, WebP, or AVIF, one work per file";
+  if (status === "ready") return "PNG, GIF, JPG, WebP, or AVIF";
   if (status === "error") return "Try another file";
   return "";
 }

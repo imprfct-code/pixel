@@ -35,10 +35,12 @@ export function ImageLightbox({
   entry,
   onClose,
   toolbarActions,
+  details,
 }: {
   entry: Entry;
   onClose: () => void;
   toolbarActions?: ReactNode;
+  details?: ReactNode;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
@@ -256,6 +258,7 @@ export function ImageLightbox({
           />
         </div>
       </div>
+      {details && <div className="lightbox-details">{details}</div>}
     </div>
   );
 }
