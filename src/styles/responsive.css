@@ -1,7 +1,6 @@
 @media (max-width: 760px) {
   .site-header,
-  .page-shell,
-  footer {
+  .page-shell {
     width: min(100% - 28px, 1180px);
   }
   .site-header nav {

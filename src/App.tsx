@@ -102,7 +102,6 @@ export function PixelApp({
             />
           )}
         </main>
-        <footer>Pixel</footer>
       </div>
     </GlobalDrop>
   );

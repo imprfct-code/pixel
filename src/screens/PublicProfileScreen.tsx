@@ -36,7 +36,6 @@ export function PublicProfileScreen() {
           />
         )}
       </main>
-      <footer>Pixel</footer>
     </div>
   );
 }
