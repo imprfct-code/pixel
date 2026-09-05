@@ -1,4 +1,4 @@
-import { FileDown, Download, Minus, Plus, X } from "lucide-react";
+import { FileDown, Download, Maximize, Minus, Plus, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -14,23 +14,13 @@ import { useFramePlayback } from "../hooks/useFramePlayback";
 import { AnimationControls, AnimationFrame } from "./AnimationPreview";
 import { ArtworkImage } from "./ArtworkImage";
 
-const MIN_ZOOM = 0.05;
-const MAX_ZOOM = 16;
+import { artworkZoom, clampArtworkZoom } from "../lib/artworkZoom";
 const BUTTON_ZOOM_FACTOR = 1.25;
 const WHEEL_ZOOM_SENSITIVITY = 0.02;
 const MAX_WHEEL_ZOOM_EXPONENT = 0.25;
-const IMAGE_PADDING = 96;
-
-function clampZoom(zoom: number) {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
-}
 
 function zoomLabel(zoom: number) {
   return `${Number(zoom.toFixed(2))}×`;
-}
-
-function preferredZoom(entry: Entry) {
-  return entry.width <= 64 ? 8 : entry.width <= 256 ? 4 : entry.width <= 512 ? 2 : 1;
 }
 
 export function ImageLightbox({
@@ -60,38 +50,75 @@ export function ImageLightbox({
       }
     | undefined
   >(undefined);
-  const [zoom, setZoom] = useState(() => preferredZoom(entry));
+  const zoomMode = useRef<"auto" | "fit" | "manual">("auto");
+  const [limits, setLimits] = useState(() => artworkZoom(entry, { width: 512, height: 512 }));
+  const [zoom, setZoom] = useState(limits.initial);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const fitZoom = Math.min(
-      Math.max(1, canvas.clientWidth - IMAGE_PADDING) / entry.width,
-      Math.max(1, canvas.clientHeight - IMAGE_PADDING) / entry.height,
-    );
-    setZoom(clampZoom(Math.min(preferredZoom(entry), fitZoom)));
-    canvas.scrollTo({ left: 0, top: 0 });
-  }, [entry]);
-
-  const changeZoom = useCallback((factor: number, clientX?: number, clientY?: number) => {
-    const canvas = canvasRef.current;
-    const image = canvas?.querySelector("[data-artwork]");
-    if (!canvas || !image) return;
-    const canvasRect = canvas.getBoundingClientRect();
-    const imageRect = image.getBoundingClientRect();
-    const x = clientX ?? canvasRect.left + canvas.clientWidth / 2;
-    const y = clientY ?? canvasRect.top + canvas.clientHeight / 2;
-    zoomAnchorRef.current = {
-      clientX: x,
-      clientY: y,
-      imageX: (x - imageRect.left) / imageRect.width,
-      imageY: (y - imageRect.top) / imageRect.height,
+    const wrap = canvas?.querySelector(".lightbox-image-wrap");
+    if (!canvas || !wrap) return;
+    zoomMode.current = "auto";
+    zoomAnchorRef.current = undefined;
+    const measure = () => {
+      const padding = getComputedStyle(wrap);
+      const next = artworkZoom(
+        { width: entry.width, height: entry.height },
+        {
+          width:
+            canvas.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight),
+          height:
+            canvas.clientHeight -
+            parseFloat(padding.paddingTop) -
+            parseFloat(padding.paddingBottom),
+        },
+      );
+      setLimits(next);
+      setZoom((current) =>
+        zoomMode.current === "auto"
+          ? next.initial
+          : zoomMode.current === "fit"
+            ? next.fit
+            : clampArtworkZoom(current, next),
+      );
+      if (zoomMode.current !== "manual") canvas.scrollTo({ left: 0, top: 0 });
     };
-    setZoom((current) => clampZoom(current * factor));
-  }, []);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [entry.id, entry.width, entry.height]);
+
+  const fitToView = useCallback(() => {
+    zoomMode.current = "fit";
+    zoomAnchorRef.current = undefined;
+    setZoom(limits.fit);
+    canvasRef.current?.scrollTo({ left: 0, top: 0 });
+  }, [limits.fit]);
+
+  const changeZoom = useCallback(
+    (factor: number, clientX?: number, clientY?: number) => {
+      const canvas = canvasRef.current;
+      const image = canvas?.querySelector("[data-artwork]");
+      if (!canvas || !image) return;
+      zoomMode.current = "manual";
+      const canvasRect = canvas.getBoundingClientRect();
+      const imageRect = image.getBoundingClientRect();
+      const x = clientX ?? canvasRect.left + canvas.clientWidth / 2;
+      const y = clientY ?? canvasRect.top + canvas.clientHeight / 2;
+      zoomAnchorRef.current = {
+        clientX: x,
+        clientY: y,
+        imageX: (x - imageRect.left) / imageRect.width,
+        imageY: (y - imageRect.top) / imageRect.height,
+      };
+      setZoom((current) => clampArtworkZoom(current * factor, limits));
+    },
+    [limits],
+  );
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -300,7 +327,7 @@ export function ImageLightbox({
           <button
             type="button"
             onClick={() => changeZoom(1 / BUTTON_ZOOM_FACTOR)}
-            disabled={zoom <= MIN_ZOOM}
+            disabled={zoom <= limits.min}
             aria-label="Zoom out"
           >
             <Minus size={16} />
@@ -309,10 +336,18 @@ export function ImageLightbox({
           <button
             type="button"
             onClick={() => changeZoom(BUTTON_ZOOM_FACTOR)}
-            disabled={zoom >= MAX_ZOOM}
+            disabled={zoom >= limits.max}
             aria-label="Zoom in"
           >
             <Plus size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={fitToView}
+            aria-label="Fit artwork to view"
+            title="Fit artwork to view"
+          >
+            <Maximize size={16} />
           </button>
           <button
             type="button"
