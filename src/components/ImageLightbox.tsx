@@ -346,8 +346,8 @@ export function ImageLightbox({
             type="button"
             onClick={() => void handleDownload()}
             disabled={downloading}
-            aria-label={downloadError ? "Download failed" : "Download image"}
-            title={downloadError ? "Download failed" : "Download"}
+            aria-label={downloading ? "Downloading image" : "Download image"}
+            title={downloading ? "Downloading…" : "Download"}
           >
             <Download size={16} />
           </button>
@@ -388,6 +388,11 @@ export function ImageLightbox({
         </div>
       </div>
       <div className="lightbox-footer">
+        {downloadError && (
+          <p className="lightbox-download-error" role="alert">
+            Download failed. Please try again.
+          </p>
+        )}
         {(entry.animation || entry.sourceUrl) && (
           <div className="lightbox-playback">
             {entry.animation && (

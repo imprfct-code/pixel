@@ -37,7 +37,8 @@ export function readImageSize(file: File) {
 }
 
 export async function downloadImage(url: string, filename: string) {
-  const response = await fetch(url);
+  // An <img> cache entry may lack CORS headers; downloads need a fresh CORS response.
+  const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error("Download failed");
   const objectUrl = URL.createObjectURL(await response.blob());
   const anchor = document.createElement("a");
@@ -46,5 +47,5 @@ export async function downloadImage(url: string, filename: string) {
   document.body.append(anchor);
   anchor.click();
   anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+  setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }

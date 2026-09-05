@@ -13,7 +13,7 @@ import { Link } from "react-router";
 import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
 import { entryDate, calendarDateLabel } from "../lib/calendar";
 import { downloadImage } from "../lib/image";
-import { ArtworkImage } from "./ArtworkImage";
+import { ArtworkPreview } from "./ArtworkPreview";
 
 export type ArtworkGridItem = {
   entry: Entry;
@@ -87,11 +87,7 @@ function ArtworkCard({
         onClick={() => onOpen(entry)}
         aria-label={`Open ${entry.title ?? entry.originalFilename}`}
       >
-        <ArtworkImage
-          src={entry.imageUrl}
-          alt={entry.title ?? entry.originalFilename}
-          loading="lazy"
-        />
+        <ArtworkPreview entry={entry} />
         {entry.animation && (
           <span className="feed-card-frames">{entry.animation.frameDurations.length} frames</span>
         )}

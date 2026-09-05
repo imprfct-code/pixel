@@ -6,7 +6,7 @@ Upload `.ase` or `.aseprite` through the same chooser or drop target as PNG/GIF.
 
 The original file is preserved unchanged in private R2 storage. Only the owner receives its download URL. Public viewers receive the cover and frame atlas. Original layers, tags, palettes and other project data remain in the downloadable source.
 
-Playback starts paused, follows per-frame durations, stops when the document is hidden, and offers previous/next buttons and a frame slider. In the viewer, Space toggles playback and left/right arrows step frames; buttons and the slider also work with the keyboard. Gallery previews are static. PNG/GIF/JPEG/WebP/AVIF retain their existing upload behavior; GIF uses native image playback without the Aseprite frame controls.
+Playback starts automatically, follows per-frame durations, suspends when the document is hidden, and offers previous/next buttons and a frame slider. In the viewer, Space toggles playback and left/right arrows step frames; buttons and the slider also work with the keyboard. Gallery previews animate while visible on screen. PNG/GIF/JPEG/WebP/AVIF retain their existing upload behavior; GIF uses native image playback without the Aseprite frame controls.
 
 ## Supported subset and limits
 
