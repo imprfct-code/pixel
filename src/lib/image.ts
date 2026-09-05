@@ -49,3 +49,13 @@ export async function downloadImage(url: string, filename: string) {
   anchor.remove();
   setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
 }
+
+export function downloadArtwork(entry: Entry) {
+  return downloadImage(
+    entry.animation?.url ?? entry.imageUrl,
+    entry.animation
+      ? `${entry.originalFilename.replace(/\.[^.]+$/, "")}-spritesheet.png`
+      : entry.originalFilename,
+  );
+}
+import type { Entry } from "../../shared/pixel";

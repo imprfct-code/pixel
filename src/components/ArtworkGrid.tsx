@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router";
 import type { Entry, UserSummary, Visibility } from "../../shared/pixel";
 import { entryDate, calendarDateLabel } from "../lib/calendar";
-import { downloadImage } from "../lib/image";
+import { downloadArtwork } from "../lib/image";
 import { ArtworkPreview } from "./ArtworkPreview";
 
 export type ArtworkGridItem = {
@@ -133,12 +133,12 @@ function ArtworkCard({
                 onClick={() => {
                   setMenuOpen(false);
                   setActionError("");
-                  void downloadImage(entry.imageUrl, entry.originalFilename).catch(() => {
+                  void downloadArtwork(entry).catch(() => {
                     setActionError("Download failed. Try again.");
                   });
                 }}
               >
-                <Download size={12} /> download
+                <Download size={12} /> {entry.animation ? "download sprite sheet" : "download"}
               </button>
             </div>
           )}

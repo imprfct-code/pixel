@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Entry } from "../../shared/pixel";
-import { downloadImage } from "../lib/image";
+import { downloadArtwork, downloadImage } from "../lib/image";
 import { useFramePlayback } from "../hooks/useFramePlayback";
 import { AnimationControls, AnimationFrame } from "./AnimationPreview";
 import { ArtworkImage } from "./ArtworkImage";
@@ -293,7 +293,7 @@ export function ImageLightbox({
     setDownloading(true);
     setDownloadError(false);
     try {
-      await downloadImage(entry.imageUrl, entry.originalFilename);
+      await downloadArtwork(entry);
     } catch {
       setDownloadError(true);
     } finally {
@@ -346,8 +346,20 @@ export function ImageLightbox({
             type="button"
             onClick={() => void handleDownload()}
             disabled={downloading}
-            aria-label={downloading ? "Downloading image" : "Download image"}
-            title={downloading ? "Downloading…" : "Download"}
+            aria-label={
+              downloading
+                ? "Downloading…"
+                : entry.animation
+                  ? "Download sprite sheet"
+                  : "Download image"
+            }
+            title={
+              downloading
+                ? "Downloading…"
+                : entry.animation
+                  ? "Download sprite sheet (PNG)"
+                  : "Download"
+            }
           >
             <Download size={16} />
           </button>
