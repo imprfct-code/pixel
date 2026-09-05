@@ -99,6 +99,12 @@
   overflow-y: auto;
   background: #0a0a0a;
 }
+.lightbox-download-error {
+  margin: 0;
+  padding: 12px 16px;
+  color: var(--rose);
+  font-size: 11px;
+}
 .lightbox-playback {
   display: flex;
   flex-wrap: wrap;
