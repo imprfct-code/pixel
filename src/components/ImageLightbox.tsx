@@ -1,4 +1,4 @@
-import { Download, Minus, Plus, X } from "lucide-react";
+import { FileDown, Download, Maximize, Minus, Plus, X } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -10,25 +10,17 @@ import {
 } from "react";
 import type { Entry } from "../../shared/pixel";
 import { downloadImage } from "../lib/image";
+import { useFramePlayback } from "../hooks/useFramePlayback";
+import { AnimationControls, AnimationFrame } from "./AnimationPreview";
 import { ArtworkImage } from "./ArtworkImage";
 
-const MIN_ZOOM = 0.05;
-const MAX_ZOOM = 16;
+import { artworkZoom, clampArtworkZoom } from "../lib/artworkZoom";
 const BUTTON_ZOOM_FACTOR = 1.25;
 const WHEEL_ZOOM_SENSITIVITY = 0.02;
 const MAX_WHEEL_ZOOM_EXPONENT = 0.25;
-const IMAGE_PADDING = 96;
-
-function clampZoom(zoom: number) {
-  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
-}
 
 function zoomLabel(zoom: number) {
   return `${Number(zoom.toFixed(2))}×`;
-}
-
-function preferredZoom(entry: Entry) {
-  return entry.width <= 64 ? 8 : entry.width <= 256 ? 4 : entry.width <= 512 ? 2 : 1;
 }
 
 export function ImageLightbox({
@@ -42,6 +34,8 @@ export function ImageLightbox({
   toolbarActions?: ReactNode;
   details?: ReactNode;
 }) {
+  const playback = useFramePlayback(entry.animation?.frameDurations);
+  const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
   const pointersRef = useRef(new Map<number, { x: number; y: number }>());
@@ -55,43 +49,80 @@ export function ImageLightbox({
       }
     | undefined
   >(undefined);
-  const [zoom, setZoom] = useState(() => preferredZoom(entry));
+  const zoomMode = useRef<"auto" | "fit" | "manual">("auto");
+  const [limits, setLimits] = useState(() => artworkZoom(entry, { width: 512, height: 512 }));
+  const [zoom, setZoom] = useState(limits.initial);
   const [downloading, setDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(false);
   const [dragging, setDragging] = useState(false);
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
-    const fitZoom = Math.min(
-      Math.max(1, canvas.clientWidth - IMAGE_PADDING) / entry.width,
-      Math.max(1, canvas.clientHeight - IMAGE_PADDING) / entry.height,
-    );
-    setZoom(clampZoom(Math.min(preferredZoom(entry), fitZoom)));
-    canvas.scrollTo({ left: 0, top: 0 });
-  }, [entry]);
-
-  const changeZoom = useCallback((factor: number, clientX?: number, clientY?: number) => {
-    const canvas = canvasRef.current;
-    const image = canvas?.querySelector("img");
-    if (!canvas || !image) return;
-    const canvasRect = canvas.getBoundingClientRect();
-    const imageRect = image.getBoundingClientRect();
-    const x = clientX ?? canvasRect.left + canvas.clientWidth / 2;
-    const y = clientY ?? canvasRect.top + canvas.clientHeight / 2;
-    zoomAnchorRef.current = {
-      clientX: x,
-      clientY: y,
-      imageX: (x - imageRect.left) / imageRect.width,
-      imageY: (y - imageRect.top) / imageRect.height,
+    const wrap = canvas?.querySelector(".lightbox-image-wrap");
+    if (!canvas || !wrap) return;
+    zoomMode.current = "auto";
+    zoomAnchorRef.current = undefined;
+    const measure = () => {
+      const padding = getComputedStyle(wrap);
+      const next = artworkZoom(
+        { width: entry.width, height: entry.height },
+        {
+          width:
+            canvas.clientWidth - parseFloat(padding.paddingLeft) - parseFloat(padding.paddingRight),
+          height:
+            canvas.clientHeight -
+            parseFloat(padding.paddingTop) -
+            parseFloat(padding.paddingBottom),
+        },
+      );
+      setLimits(next);
+      setZoom((current) =>
+        zoomMode.current === "auto"
+          ? next.initial
+          : zoomMode.current === "fit"
+            ? next.fit
+            : clampArtworkZoom(current, next),
+      );
+      if (zoomMode.current !== "manual") canvas.scrollTo({ left: 0, top: 0 });
     };
-    setZoom((current) => clampZoom(current * factor));
-  }, []);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [entry.id, entry.width, entry.height]);
+
+  const fitToView = useCallback(() => {
+    zoomMode.current = "fit";
+    zoomAnchorRef.current = undefined;
+    setZoom(limits.fit);
+    canvasRef.current?.scrollTo({ left: 0, top: 0 });
+  }, [limits.fit]);
+
+  const changeZoom = useCallback(
+    (factor: number, clientX?: number, clientY?: number) => {
+      const canvas = canvasRef.current;
+      const image = canvas?.querySelector("[data-artwork]");
+      if (!canvas || !image) return;
+      zoomMode.current = "manual";
+      const canvasRect = canvas.getBoundingClientRect();
+      const imageRect = image.getBoundingClientRect();
+      const x = clientX ?? canvasRect.left + canvas.clientWidth / 2;
+      const y = clientY ?? canvasRect.top + canvas.clientHeight / 2;
+      zoomAnchorRef.current = {
+        clientX: x,
+        clientY: y,
+        imageX: (x - imageRect.left) / imageRect.width,
+        imageY: (y - imageRect.top) / imageRect.height,
+      };
+      setZoom((current) => clampArtworkZoom(current * factor, limits));
+    },
+    [limits],
+  );
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     const anchor = zoomAnchorRef.current;
-    const image = canvas?.querySelector("img");
+    const image = canvas?.querySelector("[data-artwork]");
     if (!canvas || !anchor || !image) return;
     const imageRect = image.getBoundingClientRect();
     canvas.scrollLeft += imageRect.left + imageRect.width * anchor.imageX - anchor.clientX;
@@ -100,11 +131,43 @@ export function ImageLightbox({
   }, [zoom]);
 
   useEffect(() => {
+    const previousFocus = document.activeElement;
+    const root = rootRef.current;
+    root?.focus();
+    const trapFocus = (event: KeyboardEvent) => {
+      if (event.key !== "Tab" || document.querySelector("dialog[open]")) return;
+      const controls = root?.querySelectorAll<HTMLElement>(
+        "button:not(:disabled), a[href], input:not(:disabled)",
+      );
+      if (!controls?.length) return;
+      const first = controls[0],
+        last = controls[controls.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === root)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    root?.addEventListener("keydown", trapFocus);
+    return () => {
+      root?.removeEventListener("keydown", trapFocus);
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, []);
+
+  useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKey = (event: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
+      if (event.defaultPrevented || document.querySelector("dialog[open]")) return;
       if (event.key === "Escape") onClose();
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.matches("input, textarea, button, select")
+      )
+        return;
       if (event.key === "+" || event.key === "=") {
         event.preventDefault();
         changeZoom(BUTTON_ZOOM_FACTOR);
@@ -115,11 +178,11 @@ export function ImageLightbox({
       }
       const canvas = canvasRef.current;
       if (!canvas) return;
-      if (event.key === "ArrowLeft") {
+      if (event.key === "ArrowLeft" && !entry.animation) {
         event.preventDefault();
         canvas.scrollBy({ left: -80 });
       }
-      if (event.key === "ArrowRight") {
+      if (event.key === "ArrowRight" && !entry.animation) {
         event.preventDefault();
         canvas.scrollBy({ left: 80 });
       }
@@ -137,7 +200,7 @@ export function ImageLightbox({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKey);
     };
-  }, [changeZoom, onClose]);
+  }, [changeZoom, onClose, entry.animation]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -240,6 +303,8 @@ export function ImageLightbox({
 
   return (
     <div
+      ref={rootRef}
+      tabIndex={-1}
       className="lightbox"
       role="dialog"
       aria-modal="true"
@@ -255,7 +320,7 @@ export function ImageLightbox({
           <button
             type="button"
             onClick={() => changeZoom(1 / BUTTON_ZOOM_FACTOR)}
-            disabled={zoom <= MIN_ZOOM}
+            disabled={zoom <= limits.min}
             aria-label="Zoom out"
           >
             <Minus size={16} />
@@ -264,10 +329,18 @@ export function ImageLightbox({
           <button
             type="button"
             onClick={() => changeZoom(BUTTON_ZOOM_FACTOR)}
-            disabled={zoom >= MAX_ZOOM}
+            disabled={zoom >= limits.max}
             aria-label="Zoom in"
           >
             <Plus size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={fitToView}
+            aria-label="Fit artwork to view"
+            title="Fit artwork to view"
+          >
+            <Maximize size={16} />
           </button>
           <button
             type="button"
@@ -294,14 +367,78 @@ export function ImageLightbox({
         data-drop-exclude="true"
       >
         <div className="lightbox-image-wrap">
-          <ArtworkImage
-            src={entry.imageUrl}
-            alt={entry.title ?? entry.originalFilename}
-            style={{ width: entry.width * zoom, height: entry.height * zoom }}
-          />
+          {entry.animation ? (
+            <AnimationFrame
+              url={entry.animation.url}
+              previewUrl={entry.imageUrl}
+              columns={entry.animation.columns}
+              width={entry.width}
+              height={entry.height}
+              frame={playback.frame}
+              alt={entry.title ?? entry.originalFilename}
+              style={{ width: entry.width * zoom, height: entry.height * zoom }}
+            />
+          ) : (
+            <ArtworkImage
+              src={entry.imageUrl}
+              alt={entry.title ?? entry.originalFilename}
+              style={{ width: entry.width * zoom, height: entry.height * zoom }}
+            />
+          )}
         </div>
       </div>
-      {details && <div className="lightbox-details">{details}</div>}
+      <div className="lightbox-footer">
+        {(entry.animation || entry.sourceUrl) && (
+          <div className="lightbox-playback">
+            {entry.animation && (
+              <AnimationControls playback={playback} durations={entry.animation.frameDurations} />
+            )}
+            {entry.sourceUrl && (
+              <SourceDownload
+                url={entry.sourceUrl}
+                filename={entry.sourceFilename ?? "source.aseprite"}
+              />
+            )}
+          </div>
+        )}
+        {details && <div className="lightbox-details">{details}</div>}
+      </div>
     </div>
+  );
+}
+
+function SourceDownload({ url, filename }: { url: string; filename: string }) {
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  return (
+    <a
+      className="source-download"
+      href={url}
+      download={filename}
+      aria-disabled={status === "loading"}
+      title={`Private original · ${filename}`}
+      aria-label={
+        status === "error" ? "Retry Aseprite source download" : "Download Aseprite source"
+      }
+      onClick={async (event) => {
+        event.preventDefault();
+        if (status === "loading") return;
+        setStatus("loading");
+        try {
+          await downloadImage(url, filename);
+          setStatus("idle");
+        } catch {
+          setStatus("error");
+        }
+      }}
+    >
+      <FileDown size={15} />
+      <span>
+        {status === "loading"
+          ? "downloading…"
+          : status === "error"
+            ? "failed · retry"
+            : "aseprite source"}
+      </span>
+    </a>
   );
 }

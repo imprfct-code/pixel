@@ -1,0 +1,266 @@
+.animation-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 0;
+  font-size: 10px;
+  color: #bbb;
+}
+.animation-controls button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line);
+  background: #111;
+  color: #bbb;
+}
+.animation-controls button:hover {
+  background: #202020;
+  color: #eee;
+}
+.animation-controls button[data-playing="true"] {
+  border-color: #664344;
+  color: var(--rose);
+}
+.animation-controls input {
+  appearance: none;
+  min-width: 36px;
+  width: 100%;
+  max-width: 260px;
+  height: 36px;
+  margin: 0 8px;
+  flex: 1;
+  background: transparent;
+  cursor: pointer;
+  accent-color: var(--rose);
+}
+.animation-controls input::-webkit-slider-runnable-track {
+  height: 3px;
+  background: #3a3a3a;
+}
+.animation-controls input::-moz-range-track {
+  height: 3px;
+  background: #3a3a3a;
+}
+.animation-controls input::-webkit-slider-thumb {
+  appearance: none;
+  width: 10px;
+  height: 16px;
+  margin-top: -6px;
+  border: 1px solid #e0a0a1;
+  border-radius: 0;
+  background: var(--rose);
+}
+.animation-controls input::-moz-range-thumb {
+  width: 10px;
+  height: 16px;
+  border: 1px solid #e0a0a1;
+  border-radius: 0;
+  background: var(--rose);
+}
+.animation-controls span,
+.animation-controls small {
+  white-space: nowrap;
+}
+.animation-controls span {
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.animation-controls small {
+  min-width: 44px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.animation-fallback {
+  position: relative;
+}
+.animation-fallback small {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  background: #111;
+  color: #aaa;
+  font-size: 10px;
+}
+.lightbox-image-wrap canvas {
+  display: block;
+  flex: none;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.lightbox-footer {
+  min-width: 0;
+  max-height: 40dvh;
+  overflow-y: auto;
+  background: #0a0a0a;
+}
+.lightbox-playback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0 20px;
+  padding: 0 16px;
+  border-top: 1px solid var(--line);
+}
+.lightbox-playback .animation-controls {
+  flex: 1;
+  max-width: 540px;
+}
+.source-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin: 8px 0;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: #111;
+  color: #aaa;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.source-download:hover {
+  border-color: #555;
+  color: #eee;
+}
+.source-download[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: wait;
+}
+.source-note {
+  margin: 0;
+  color: #888;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.drop-zone.has-file {
+  padding: 20px 0 44px;
+  background-color: #101010;
+  background-image: conic-gradient(#161616 25%, transparent 0 50%, #161616 0 75%, transparent 0);
+  background-size: 16px 16px;
+}
+.drop-zone > img,
+.drop-zone > canvas,
+.drop-zone > .animation-fallback {
+  width: 88%;
+  max-width: 88%;
+  height: 250px;
+  max-height: 250px;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.drop-zone .animation-fallback img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.file-caption {
+  gap: 10px;
+}
+.file-caption strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.file-caption span {
+  flex: none;
+}
+.upload-media-column .animation-controls {
+  flex-wrap: wrap;
+  padding: 0;
+}
+.upload-media-column .animation-controls small {
+  display: none;
+}
+@media (max-width: 480px) {
+  .animation-controls {
+    gap: 4px;
+  }
+  .animation-controls button {
+    flex-basis: 40px;
+    height: 40px;
+  }
+  .animation-controls input {
+    margin: 0 4px;
+  }
+  .animation-controls small {
+    display: none;
+  }
+  .lightbox-playback {
+    padding: 0 12px;
+  }
+}
+
+.lightbox:focus {
+  outline: none;
+}
+.animation-controls input {
+  border: 0;
+  padding: 0;
+}
+.animation-controls input:focus-visible {
+  outline: 1px solid #777;
+  outline-offset: 2px;
+}
+@media (max-width: 600px) {
+  .lightbox-playback .animation-controls {
+    flex-basis: 100%;
+    max-width: none;
+  }
+  .lightbox-playback .source-download {
+    margin-top: 0;
+  }
+}
+
+.replace-file {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  min-height: 32px;
+  padding: 0 9px;
+  border: 1px solid #333;
+  background: #0a0a0a;
+  color: #aaa;
+  font-size: 9px;
+}
+.replace-file:hover {
+  border-color: #666;
+  color: #eee;
+}
+.import-status {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 48px 20px 20px;
+  color: #888;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.import-status p {
+  margin: 0;
+  color: var(--rose);
+  font-size: 10px;
+}
+.drop-zone.has-error {
+  min-height: 220px;
+}
+
+@media (max-width: 680px) {
+  .upload-form .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    margin: 0 -18px -18px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--line);
+    background: #0c0c0c;
+  }
+}

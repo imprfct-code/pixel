@@ -92,6 +92,9 @@ function ArtworkCard({
           alt={entry.title ?? entry.originalFilename}
           loading="lazy"
         />
+        {entry.animation && (
+          <span className="feed-card-frames">{entry.animation.frameDurations.length} frames</span>
+        )}
       </button>
       <div className="feed-card-actions">
         {entry.visibility !== "private" && (

@@ -1,7 +1,6 @@
 import { ImagePlus, UploadCloud, X } from "lucide-react";
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type ClipboardEvent,
@@ -10,7 +9,11 @@ import {
 } from "react";
 import type { UploadInput, Visibility } from "../../shared/pixel";
 import { calendarDateKey } from "../lib/calendar";
-import { readImageSize, validateImageFile } from "../lib/image";
+import { ARTWORK_ACCEPT, validateImageFile } from "../lib/image";
+
+import { useArtworkFile } from "../hooks/useArtworkFile";
+import { useFramePlayback } from "../hooks/useFramePlayback";
+import { AnimationFrame, AnimationControls } from "../components/AnimationPreview";
 
 type UploadDraft = {
   file: File;
@@ -57,13 +60,8 @@ export function UploadScreen({
     };
   }, []);
 
-  const previewUrl = useMemo(() => (file ? URL.createObjectURL(file) : undefined), [file]);
-  useEffect(
-    () => () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    },
-    [previewUrl],
-  );
+  const { prepared, error: importError, loading } = useArtworkFile(file);
+  const playback = useFramePlayback(prepared?.animation?.frameDurations);
 
   function choose(files: FileList | File[]) {
     if (submitting) return;
@@ -76,7 +74,9 @@ export function UploadScreen({
     }
     try {
       validateImageFile(selected[0]);
-      setDraft(createDraft(selected[0]));
+      setDraft((current) =>
+        current ? { ...current, file: selected[0] } : createDraft(selected[0]),
+      );
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Invalid file");
     }
@@ -99,16 +99,13 @@ export function UploadScreen({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!draft || submitting) return;
+    if (!draft || !prepared || submitting) return;
     setSubmitting(true);
     setError(undefined);
 
     try {
-      validateImageFile(draft.file);
-      const dimensions = await readImageSize(draft.file);
       const entryId = await onUpload({
-        file: draft.file,
-        ...dimensions,
+        ...prepared,
         title: draft.title.trim() || undefined,
         note: draft.note.trim() || undefined,
         visibility: draft.visibility,
@@ -147,7 +144,7 @@ export function UploadScreen({
         <form className="upload-form" onSubmit={submit}>
           <div className="upload-media-column">
             <div
-              className={`drop-zone ${dragging ? "is-dragging" : ""} ${draft ? "has-file" : ""}`}
+              className={`drop-zone ${dragging ? "is-dragging" : ""} ${draft ? "has-file" : ""} ${importError ? "has-error" : ""}`}
               onDragEnter={() => setDragging(true)}
               onDragLeave={() => setDragging(false)}
               onDragOver={(event) => event.preventDefault()}
@@ -158,7 +155,25 @@ export function UploadScreen({
             >
               {draft ? (
                 <>
-                  <img src={previewUrl} alt="Selected artwork preview" />
+                  {prepared?.animation && prepared.animationUrl ? (
+                    <AnimationFrame
+                      url={prepared.animationUrl}
+                      previewUrl={prepared.previewUrl}
+                      columns={prepared.animation.columns}
+                      width={prepared.width}
+                      height={prepared.height}
+                      frame={playback.frame}
+                      alt="Selected artwork preview"
+                    />
+                  ) : prepared ? (
+                    <img src={prepared.previewUrl} alt="Selected artwork preview" />
+                  ) : (
+                    <div className="import-status" role={importError ? "alert" : "status"}>
+                      <ImagePlus size={24} strokeWidth={1.5} />
+                      <strong>{loading ? "Reading artwork…" : "Could not import this file"}</strong>
+                      {importError && <p>{importError}</p>}
+                    </div>
+                  )}
                   <button
                     className="remove-file"
                     disabled={submitting}
@@ -168,9 +183,20 @@ export function UploadScreen({
                   >
                     <X size={16} />
                   </button>
+                  <button
+                    type="button"
+                    className="replace-file"
+                    disabled={submitting}
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    change file
+                  </button>
                   <div className="file-caption">
                     <strong>{draft.file.name}</strong>
-                    <span>{Math.ceil(draft.file.size / 1024)} KB</span>
+                    <span>
+                      {prepared ? `${prepared.width}×${prepared.height} · ` : ""}
+                      {Math.ceil(draft.file.size / 1024)} KB
+                    </span>
                   </div>
                 </>
               ) : (
@@ -181,20 +207,33 @@ export function UploadScreen({
                 >
                   <ImagePlus size={24} strokeWidth={1.5} />
                   <strong>drop / paste / choose</strong>
-                  <span>PNG, GIF, JPG, WebP, or AVIF, up to 10 MB</span>
+                  <span>Aseprite, PNG, GIF, JPG, WebP, or AVIF · up to 10 MB</span>
                 </button>
               )}
               <input
                 ref={inputRef}
                 className="visually-hidden"
                 type="file"
-                accept="image/png,image/gif,image/jpeg,image/webp,image/avif"
+                disabled={submitting}
+                accept={ARTWORK_ACCEPT}
                 onChange={(event) => {
                   if (event.target.files) choose(event.target.files);
                   event.target.value = "";
                 }}
               />
             </div>
+            {prepared?.animation && (
+              <AnimationControls
+                playback={playback}
+                durations={prepared.animation.frameDurations}
+              />
+            )}
+            {prepared?.source && (
+              <p className="source-note">
+                Original Aseprite file is saved privately for you. Viewers see the preview
+                {prepared.animation ? " and animation" : ""}.
+              </p>
+            )}
           </div>
           <div className="form-fields">
             <label>
@@ -261,7 +300,7 @@ export function UploadScreen({
               <button className="button" type="button" onClick={onClose} disabled={submitting}>
                 cancel
               </button>
-              <button className="button primary" type="submit" disabled={!draft || submitting}>
+              <button className="button primary" type="submit" disabled={!prepared || submitting}>
                 <UploadCloud size={15} />
                 {submitting ? "saving" : "save work"}
               </button>

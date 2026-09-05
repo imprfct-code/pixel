@@ -18,6 +18,17 @@ export default defineSchema({
   entries: defineTable({
     userId: v.id("users"),
     objectKey: v.string(),
+    source: v.optional(
+      v.object({ objectKey: v.string(), filename: v.string(), fileSize: v.number() }),
+    ),
+    animation: v.optional(
+      v.object({
+        objectKey: v.string(),
+        fileSize: v.number(),
+        columns: v.number(),
+        frameDurations: v.array(v.number()),
+      }),
+    ),
     originalFilename: v.string(),
     mimeType: v.union(
       v.literal("image/png"),

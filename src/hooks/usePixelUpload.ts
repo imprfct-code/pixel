@@ -7,7 +7,7 @@ export function usePixelUpload() {
   const finalizeUpload = useAction(api.entries.finalizeUpload);
 
   return async (input: UploadInput) => {
-    const { entryId, uploadUrl } = await beginUpload({
+    const { entryId, uploadUrl, sourceUploadUrl, animationUploadUrl } = await beginUpload({
       originalFilename: input.file.name,
       mimeType: input.file.type as Entry["mimeType"],
       width: input.width,
@@ -17,18 +17,39 @@ export function usePixelUpload() {
       practiceDate: input.practiceDate,
       note: input.note,
       visibility: input.visibility,
+      source: input.source
+        ? { filename: input.source.name, fileSize: input.source.size }
+        : undefined,
+      animation: input.animation
+        ? {
+            fileSize: input.animation.file.size,
+            columns: input.animation.columns,
+            frameDurations: input.animation.frameDurations,
+          }
+        : undefined,
     });
-    let response: Response;
-    try {
-      response = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": input.file.type },
-        body: input.file,
-      });
-    } catch {
-      throw new Error("Could not upload the image. Check your connection and try again.");
+    const uploads = [
+      { url: uploadUrl, file: input.file, type: input.file.type },
+      ...(input.source && sourceUploadUrl
+        ? [{ url: sourceUploadUrl, file: input.source, type: "application/octet-stream" }]
+        : []),
+      ...(input.animation && animationUploadUrl
+        ? [{ url: animationUploadUrl, file: input.animation.file, type: "image/png" }]
+        : []),
+    ];
+    for (const upload of uploads) {
+      let response: Response;
+      try {
+        response = await fetch(upload.url, {
+          method: "PUT",
+          headers: { "Content-Type": upload.type },
+          body: upload.file,
+        });
+      } catch {
+        throw new Error("Could not upload the work. Check your connection and try again.");
+      }
+      if (!response.ok) throw new Error("Could not save the work. Please try again.");
     }
-    if (!response.ok) throw new Error("Could not save the image. Please try again.");
     await finalizeUpload({ entryId });
     return entryId;
   };

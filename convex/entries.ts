@@ -6,6 +6,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { userFromAuth } from "./auth";
 import { r2 } from "./r2";
+import { entryAssets, validateExtraAssets, sourceUpload, animationUpload } from "./entryAssets";
 import { visibility } from "./schema";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -16,7 +17,7 @@ function optionalText(value: string | undefined, max: number) {
   return cleaned || undefined;
 }
 
-function entryPayload(entry: Doc<"entries">, imageUrl: string) {
+async function entryPayload(entry: Doc<"entries">, owner = false) {
   return {
     id: entry._id,
     title: entry.title ?? null,
@@ -29,7 +30,16 @@ function entryPayload(entry: Doc<"entries">, imageUrl: string) {
     visibility: entry.visibility,
     createdAt: new Date(entry.createdAt).toISOString(),
     practiceDate: entry.practiceDate,
-    imageUrl,
+    imageUrl: await r2.getUrl(entry.objectKey),
+    sourceFilename: entry.source?.filename,
+    sourceUrl: owner && entry.source ? await r2.getUrl(entry.source.objectKey) : undefined,
+    animation: entry.animation
+      ? {
+          url: await r2.getUrl(entry.animation.objectKey),
+          columns: entry.animation.columns,
+          frameDurations: entry.animation.frameDurations,
+        }
+      : undefined,
   };
 }
 
@@ -56,9 +66,7 @@ export const listMine = query({
       .collect();
 
     return Promise.all(
-      entries
-        .filter((entry) => entry.status === "ready")
-        .map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
+      entries.filter((entry) => entry.status === "ready").map(async (entry) => entryPayload(entry)),
     );
   },
 });
@@ -69,7 +77,7 @@ export const getMine = query({
     const user = await userFromAuth(ctx);
     const entry = await ctx.db.get("entries", entryId);
     if (!entry || entry.userId !== user._id || entry.status !== "ready") return null;
-    return entryPayload(entry, await r2.getUrl(entry.objectKey));
+    return entryPayload(entry, true);
   },
 });
 
@@ -97,7 +105,7 @@ export const view = query({
     return {
       status: "ready" as const,
       canEdit,
-      entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+      entry: await entryPayload(entry, canEdit),
       author: userPayload(author),
     };
   },
@@ -126,7 +134,7 @@ export const publicProfile = query({
       entries: await Promise.all(
         entries
           .filter((entry) => entry.status === "ready" && entry.visibility === "public")
-          .map(async (entry) => entryPayload(entry, await r2.getUrl(entry.objectKey))),
+          .map(async (entry) => entryPayload(entry)),
       ),
     };
   },
@@ -152,7 +160,7 @@ export const feed = query({
         return author
           ? [
               (async () => ({
-                entry: entryPayload(entry, await r2.getUrl(entry.objectKey)),
+                entry: await entryPayload(entry),
                 author: userPayload(author),
               }))(),
             ]
@@ -195,13 +203,15 @@ export const removeMine = mutation({
     const user = await userFromAuth(ctx);
     const entry = await ctx.db.get("entries", entryId);
     if (!entry || entry.userId !== user._id) throw new Error("Work not found");
-    await r2.deleteObject(ctx, entry.objectKey);
+    for (const asset of entryAssets(entry)) await r2.deleteObject(ctx, asset.objectKey);
     await ctx.db.delete(entry._id);
   },
 });
 
 export const beginUpload = mutation({
   args: {
+    source: v.optional(sourceUpload),
+    animation: v.optional(animationUpload),
     originalFilename: v.string(),
     mimeType: v.union(
       v.literal("image/png"),
@@ -235,8 +245,10 @@ export const beginUpload = mutation({
       throw new Error("Images must be 10 MB or smaller");
     }
 
+    validateExtraAssets(args);
+    const { source, animation, ...imageArgs } = args;
     const entryId = await ctx.db.insert("entries", {
-      ...args,
+      ...imageArgs,
       practiceDate:
         args.practiceDate === undefined ? undefined : validatePracticeDate(args.practiceDate),
       originalFilename: args.originalFilename.slice(0, 200),
@@ -255,9 +267,25 @@ export const beginUpload = mutation({
       "image/avif": "avif",
     }[args.mimeType];
     const objectKey = `users/${user._id}/entries/${entryId}/original.${extension}`;
-    await ctx.db.patch(entryId, { objectKey });
+    const base = `users/${user._id}/entries/${entryId}`;
+    const sourceAsset = source
+      ? { ...source, filename: source.filename.slice(0, 200), objectKey: `${base}/source.aseprite` }
+      : undefined;
+    const animationAsset = animation
+      ? { ...animation, objectKey: `${base}/animation.png` }
+      : undefined;
+    await ctx.db.patch(entryId, { objectKey, source: sourceAsset, animation: animationAsset });
     const { url } = await r2.generateUploadUrl(objectKey);
-    return { entryId, uploadUrl: url };
+    return {
+      entryId,
+      uploadUrl: url,
+      sourceUploadUrl: sourceAsset
+        ? (await r2.generateUploadUrl(sourceAsset.objectKey)).url
+        : undefined,
+      animationUploadUrl: animationAsset
+        ? (await r2.generateUploadUrl(animationAsset.objectKey)).url
+        : undefined,
+    };
   },
 });
 
@@ -299,14 +327,13 @@ export const finalizeUpload = action({
     const args = { entryId, tokenIdentifier: identity.tokenIdentifier };
     const entry = await ctx.runQuery(internal.entries.uploadForFinalize, args);
 
-    await r2.syncMetadata(ctx, entry.objectKey);
-    const metadata = await r2.getMetadata(ctx, entry.objectKey);
-    if (!metadata) throw new Error("R2 upload could not be verified");
-    if (metadata.size !== undefined && metadata.size !== entry.fileSize) {
-      throw new Error("Uploaded file size does not match");
-    }
-    if (metadata.contentType && metadata.contentType !== entry.mimeType) {
-      throw new Error("Uploaded file type does not match");
+    for (const asset of entryAssets(entry)) {
+      await r2.syncMetadata(ctx, asset.objectKey);
+      const metadata = await r2.getMetadata(ctx, asset.objectKey);
+      if (!metadata) throw new Error("R2 upload could not be verified");
+      if (metadata.size !== asset.fileSize) throw new Error("Uploaded file size does not match");
+      if (metadata.contentType !== asset.mimeType)
+        throw new Error("Uploaded file type does not match");
     }
 
     await ctx.runMutation(internal.entries.completeUpload, args);
