@@ -101,7 +101,7 @@ const CLERK_APPEARANCE = {
     modalContent: {
       position: "relative",
       width: "min(860px, calc(100vw - 32px))",
-      height: "min(620px, calc(100vh - 32px))",
+      height: "min(620px, calc(100dvh - 32px))",
       maxWidth: "860px",
       maxHeight: "620px",
       margin: "auto",
