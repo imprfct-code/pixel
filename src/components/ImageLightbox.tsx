@@ -35,7 +35,6 @@ export function ImageLightbox({
   details?: ReactNode;
 }) {
   const playback = useFramePlayback(entry.animation?.frameDurations);
-  const { step, toggle } = playback;
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef({ pointerId: -1, x: 0, y: 0, left: 0, top: 0 });
@@ -162,7 +161,7 @@ export function ImageLightbox({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const handleKey = (event: KeyboardEvent) => {
-      if (document.querySelector("dialog[open]")) return;
+      if (event.defaultPrevented || document.querySelector("dialog[open]")) return;
       if (event.key === "Escape") onClose();
       if (
         event.target instanceof HTMLElement &&
@@ -177,19 +176,13 @@ export function ImageLightbox({
         event.preventDefault();
         changeZoom(1 / BUTTON_ZOOM_FACTOR);
       }
-      if (entry.animation && [" ", "ArrowLeft", "ArrowRight"].includes(event.key)) {
-        event.preventDefault();
-        if (event.key === " ") toggle();
-        else step(event.key === "ArrowRight" ? 1 : -1);
-        return;
-      }
       const canvas = canvasRef.current;
       if (!canvas) return;
-      if (event.key === "ArrowLeft") {
+      if (event.key === "ArrowLeft" && !entry.animation) {
         event.preventDefault();
         canvas.scrollBy({ left: -80 });
       }
-      if (event.key === "ArrowRight") {
+      if (event.key === "ArrowRight" && !entry.animation) {
         event.preventDefault();
         canvas.scrollBy({ left: 80 });
       }
@@ -207,7 +200,7 @@ export function ImageLightbox({
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKey);
     };
-  }, [changeZoom, onClose, entry.animation, step, toggle]);
+  }, [changeZoom, onClose, entry.animation]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

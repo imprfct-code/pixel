@@ -87,13 +87,51 @@ export function AnimationControls({
   playback: ReturnType<typeof useFramePlayback>;
   durations: number[];
 }) {
+  const controlsRef = useRef<HTMLDivElement>(null);
+  const { step, toggle } = playback;
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.isComposing ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      )
+        return;
+      if (!["ArrowLeft", "ArrowRight", " "].includes(event.key)) return;
+      const controls = controlsRef.current;
+      const target = event.target;
+      if (!controls || !(target instanceof HTMLElement)) return;
+      const dialog = document.querySelector("dialog[open]");
+      if (dialog && !dialog.contains(controls)) return;
+      const scope = controls.closest('dialog, [role="dialog"]');
+      if (scope && target !== document.body && !scope.contains(target)) return;
+      const inControls = controls.contains(target);
+      if (
+        !inControls &&
+        target.closest(
+          'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]',
+        )
+      )
+        return;
+      if (event.key === " " && !inControls && target.closest('button, a, [role="button"]')) return;
+      event.preventDefault();
+      if (event.key === " ") {
+        if (!event.repeat) toggle();
+      } else step(event.key === "ArrowRight" ? 1 : -1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [step, toggle]);
   return (
-    <div className="animation-controls" aria-label="Animation controls">
+    <div ref={controlsRef} className="animation-controls" aria-label="Animation controls">
       <button
         type="button"
-        onClick={() => playback.seek(playback.frame - 1)}
+        onClick={() => step(-1)}
         aria-label="Previous frame"
-        title="Previous frame"
+        title="Previous frame (←)"
+        aria-keyshortcuts="ArrowLeft"
       >
         <ChevronLeft size={16} />
       </button>
@@ -101,16 +139,18 @@ export function AnimationControls({
         type="button"
         onClick={playback.toggle}
         aria-label={playback.playing ? "Pause animation" : "Play animation"}
-        title={playback.playing ? "Pause animation" : "Play animation"}
+        title={playback.playing ? "Pause animation (Space)" : "Play animation (Space)"}
+        aria-keyshortcuts="Space"
         data-playing={playback.playing}
       >
         {playback.playing ? <Pause size={16} /> : <Play size={16} />}
       </button>
       <button
         type="button"
-        onClick={() => playback.seek(playback.frame + 1)}
+        onClick={() => step(1)}
         aria-label="Next frame"
-        title="Next frame"
+        title="Next frame (→)"
+        aria-keyshortcuts="ArrowRight"
       >
         <ChevronRight size={16} />
       </button>

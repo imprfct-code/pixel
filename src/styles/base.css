@@ -16,6 +16,11 @@
   scrollbar-width: thin;
 }
 
+:focus,
+:focus-visible {
+  outline: none !important;
+}
+
 ::selection {
   background: rgba(199, 120, 122, 0.38);
   color: #fff;

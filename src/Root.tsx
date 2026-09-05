@@ -28,7 +28,7 @@ const CLERK_APPEARANCE = {
     colorInput: "#111111",
     colorInputForeground: "#e8e8e8",
     colorBorder: "#3a3a3a",
-    colorRing: "#c7787a",
+    colorRing: "transparent",
     colorShadow: "#000000",
     colorModalBackdrop: "rgba(0, 0, 0, 0.56)",
     fontFamily: '"Geist Pixel"',
